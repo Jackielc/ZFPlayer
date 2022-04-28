@@ -1,0 +1,69 @@
+image: python:3.6
+
+before_script:
+  - echo "beforescript"
+#   - git config --list
+  - echo $CI_REPOSITORY_URL
+  - echo $CI_COMMIT_BRANCH
+  - git remote set-url origin git@code.shihuo.cn:$CI_PROJECT_PATH.git #https://shihuomobile:VGaH6yYWqshNswbYDxzy@code.shihuo.cn/$CI_PROJECT_PATH.git
+  - git remote -v
+  - git fetch origin --prune # 同步远程的tag
+  - git tag --sort=-committerdate
+  - CI_BEGAIN_TIME=$(date +%s)
+
+stages:
+  - prepare_params #组装参数
+  - push_pod #发布组件
+
+#组装参数-向线上仓库发布(仅在主分支进行)
+params_master_job:
+  stage: prepare_params
+  only: 
+    refs:
+      - master
+      - tags
+    variables:
+        - $CI_COMMIT_TAG =~ /^release.*/
+  script:
+    - echo $CI_COMMIT_TAG
+
+#组装参数-向测试仓库发布(在主分支之外的分支进行)
+params_test_job:
+  stage: prepare_params
+  except:
+    refs:
+      - master
+  only: 
+    variables:
+      - $CI_COMMIT_TAG =~ /^test.*/
+  script:
+    - echo $CI_COMMIT_TAG
+#组装参数-向旧仓库发布(不限制分支)
+params_old_job:
+  stage: prepare_params
+  only: 
+    variables:
+      - $CI_COMMIT_TAG =~ /^old.*/
+  script:
+    - echo $CI_COMMIT_TAG
+
+#组装参数-灰度修复问题发布
+params_old_job:
+  stage: prepare_params
+  only: 
+    variables:
+      - $CI_COMMIT_TAG =~ /^gray.*/
+  script:
+    - echo $CI_COMMIT_TAG
+
+# 
+ececute_push_job:
+  stage: push_pod
+  only:
+    variables:
+      - $CI_COMMIT_TAG =~ /^old.*/
+      - $CI_COMMIT_TAG =~ /^test.*/
+      - $CI_COMMIT_TAG =~ /^release.*/
+      - $CI_COMMIT_TAG =~ /^gray.*/
+  script:
+    - ./Tools/SHPodPush.sh $CI_COMMIT_TAG $CI_BEGAIN_TIME

@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+#coding=utf-8
+# create by SGQ 2020-02-10
+# 对commit message 进行校验
+
+import sys
+import os
+import os.path
+import io
+import re
+import shTools
+
+types = ["feat", "fix", "doc", "style", "refactor", "perf", "test", "build", "revert", "cherry", "conflict"]
+
+
+# 返回 0 通过，返回 1 未通过
+def judge_commit_message():
+    # 拿到commit-msg所在的临时问价
+    message = shTools.get_commit_message()
+
+    if shTools.is_ignored_commit_message(message):
+        return 0
+
+    # 切割
+    split_arr = message.split(':')
+    if len(split_arr) < 2:
+        return 1
+
+    if len(split_arr[1].strip()) == 0:
+        print("内容为空!!")
+        return 1
+
+    # 拿到前半部分如 feat(location)
+    prefix = split_arr[0]
+
+    pattern = r".+\(.+\)$"
+    if not re.match(pattern, prefix):
+        return 1
+
+    # 取到类型 如 feat
+    ty = prefix.split("(")[0]
+
+    # judge
+    if ty not in types:
+        return 1
+    return 0
+
+
+code = 0
+try:
+    message = shTools.get_commit_message()
+    code = shTools.check_all_files(shTools.is_ignored_commit_message(message))
+    if code == 0:
+        print("commit-msg检测...")
+        code = judge_commit_message()
+        if code == 1:
+            shTools.not_pass_alert()
+        else:
+            print("commit-msg检测通过")
+    else:
+        print("")
+       
+except BaseException as error:
+    code = 1
+    print("执行脚本出现异常", error)
+
+sys.exit(code)

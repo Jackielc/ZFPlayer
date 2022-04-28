@@ -40,7 +40,7 @@
 		109F1EE4FB48A1617F23474C /* Pods-ZFPlayer_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZFPlayer_Example.release.xcconfig"; path = "Target Support Files/Pods-ZFPlayer_Example/Pods-ZFPlayer_Example.release.xcconfig"; sourceTree = "<group>"; };
 		16619AB260283CF8146FE2E4 /* Pods_ZFPlayer_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ZFPlayer_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B37D4E9A56C902FDE2FB522 /* Pods_ZFPlayer_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ZFPlayer_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		5FFA3DFBE7E3249AC59D395B /* ZFPlayer.podspec */ = {isa = PBXFileReference; includeInIndex = 1; name = ZFPlayer.podspec; path = ../ZFPlayer.podspec; sourceTree = "<group>"; };
+		5FFA3DFBE7E3249AC59D395B /* ZFPlayer.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = ZFPlayer.podspec; path = ../ZFPlayer.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		6003F58A195388D20070C39A /* ZFPlayer_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZFPlayer_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6003F58D195388D20070C39A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		6003F58F195388D20070C39A /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -63,10 +63,10 @@
 		71719F9E1E33DC2100824A3D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		873B8AEA1B1F5CCA007FD442 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = Main.storyboard; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		B28E91C3FFDA824E8775631C /* Pods-ZFPlayer_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZFPlayer_Tests.debug.xcconfig"; path = "Target Support Files/Pods-ZFPlayer_Tests/Pods-ZFPlayer_Tests.debug.xcconfig"; sourceTree = "<group>"; };
-		BE656C217321DC175328F0C1 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
+		BE656C217321DC175328F0C1 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 		CC7AF74A80060694D58E4D76 /* Pods-ZFPlayer_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZFPlayer_Tests.release.xcconfig"; path = "Target Support Files/Pods-ZFPlayer_Tests/Pods-ZFPlayer_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		D52BC6DA442120C0FAEACA87 /* Pods-ZFPlayer_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZFPlayer_Example.debug.xcconfig"; path = "Target Support Files/Pods-ZFPlayer_Example/Pods-ZFPlayer_Example.debug.xcconfig"; sourceTree = "<group>"; };
-		EF64FFA91B20BB41AA62E32D /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		EF64FFA91B20BB41AA62E32D /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -193,7 +193,6 @@
 				B28E91C3FFDA824E8775631C /* Pods-ZFPlayer_Tests.debug.xcconfig */,
 				CC7AF74A80060694D58E4D76 /* Pods-ZFPlayer_Tests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -209,6 +208,7 @@
 				6003F587195388D20070C39A /* Frameworks */,
 				6003F588195388D20070C39A /* Resources */,
 				3BEB9DA9930A63C21EB6629E /* [CP] Embed Pods Frameworks */,
+				1CF37B2865ADFFCBEF1807D7 /* gitHooksShell */,
 			);
 			buildRules = (
 			);
@@ -248,7 +248,11 @@
 				LastUpgradeCheck = 0720;
 				ORGANIZATIONNAME = wangyongxin0408;
 				TargetAttributes = {
+					6003F589195388D20070C39A = {
+						DevelopmentTeam = SWTU7N2NXP;
+					};
 					6003F5AD195388D20070C39A = {
+						DevelopmentTeam = SWTU7N2NXP;
 						TestTargetID = 6003F589195388D20070C39A;
 					};
 				};
@@ -258,6 +262,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -295,6 +300,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		1CF37B2865ADFFCBEF1807D7 /* gitHooksShell */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = gitHooksShell;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "echo \"copy scripts to ./git/hooks\"\n# gitHook同步\nsource_dir=\"${SRCROOT}/Tools/gitHooks\"\nif [ ! -d \"$source_dir\" ]; then \n    source_dir=\"$(dirname ${SRCROOT})/Tools/gitHooks\"\n    \n    if [ ! -d \"$source_dir\" ]; then \n       source_dir=\"\"\n    fi\nfi\necho \"source_dir: ${source_dir}\"\n\ntarget_dir=\"${SRCROOT}/.git/hooks\"\nif [ ! -d \"$target_dir\" ]; then \n    target_dir=\"$(dirname ${SRCROOT})/.git/hooks\"\n    \n    if [ ! -d \"$target_dir\" ]; then \n        target_dir=\"\"\n    fi\nfi\necho \"target_dir: ${target_dir}\"\n\nif [ -n \"$source_dir\" ]  && [ -n \"${target_dir}\" ]; then \n    cp \"${source_dir}/commit-msg\" \"${target_dir}/commit-msg\"\n    cp \"${source_dir}/shTools.py\" \"${target_dir}/shTools.py\"  \nelse\n    echo \"未能定位目录\"\nfi \n";
+		};
 		3BEB9DA9930A63C21EB6629E /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -494,6 +517,8 @@
 			baseConfigurationReference = D52BC6DA442120C0FAEACA87 /* Pods-ZFPlayer_Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = SWTU7N2NXP;
+				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "ZFPlayer/ZFPlayer-Prefix.pch";
 				INFOPLIST_FILE = "ZFPlayer/ZFPlayer-Info.plist";
@@ -510,6 +535,8 @@
 			baseConfigurationReference = 109F1EE4FB48A1617F23474C /* Pods-ZFPlayer_Example.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = SWTU7N2NXP;
+				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "ZFPlayer/ZFPlayer-Prefix.pch";
 				INFOPLIST_FILE = "ZFPlayer/ZFPlayer-Info.plist";
@@ -526,6 +553,7 @@
 			baseConfigurationReference = B28E91C3FFDA824E8775631C /* Pods-ZFPlayer_Tests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = SWTU7N2NXP;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
 					"$(inherited)",
@@ -551,6 +579,7 @@
 			baseConfigurationReference = CC7AF74A80060694D58E4D76 /* Pods-ZFPlayer_Tests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = SWTU7N2NXP;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
 					"$(inherited)",
