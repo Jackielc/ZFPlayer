@@ -24,6 +24,18 @@ ZFPlayer is available under the MIT license. See the LICENSE file for more info.
 https://github.com/renzifeng/ZFPlayer/blob/master/README.md
 
 ZFPlayer三方组件修改
+
 修改点：
 
-1、
+1、_findCorrectCellWhenScrollViewDirectionVertical -> 
+    ····
+     if ([self _isCollectionView]) {
+        // First visible cell indexPath
+        if (isLast) {
+            // by wyx 修复列表滚动到最后一个播放错误的BUG
+            indexPath = sortedIndexPaths.lastObject;
+        } else {
+            indexPath = sortedIndexPaths.firstObject;
+        }
+     }
+    ····

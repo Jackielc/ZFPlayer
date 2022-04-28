@@ -453,7 +453,12 @@ Scroll to indexPath with position.
         }];
         
         // First visible cell indexPath
-        indexPath = sortedIndexPaths.firstObject;
+        if (isLast) {
+            // by wyx 修复列表滚动到最后一个播放错误的BUG
+            indexPath = sortedIndexPaths.lastObject;
+        } else {
+            indexPath = sortedIndexPaths.firstObject;
+        }
         if ((self.contentOffset.y <= 0 || isLast) && (!self.zf_playingIndexPath || [indexPath compare:self.zf_playingIndexPath] == NSOrderedSame)) {
             UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
             UIView *playerView = [cell viewWithTag:self.zf_containerViewTag];
