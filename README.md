@@ -23,6 +23,8 @@ ZFPlayer is available under the MIT license. See the LICENSE file for more info.
 
 https://github.com/renzifeng/ZFPlayer/blob/master/README.md
 
+私有库版本 4.0.3  -> github 4.0.3
+
 ZFPlayer三方组件修改
 
 修改点：
