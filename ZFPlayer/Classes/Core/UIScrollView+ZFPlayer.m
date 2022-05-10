@@ -500,6 +500,13 @@ Scroll to indexPath with position.
         
         /// Play when the video playback section is visible.
         if ((topSpacing >= -(1 - self.zf_playerApperaPercent) * CGRectGetHeight(rect)) && (bottomSpacing >= -(1 - self.zf_playerApperaPercent) * CGRectGetHeight(rect))) {
+            /// add by zm 添加视频列表滚动以视频消失为主即消失后下个视频才能播放
+            if (self.zf_playingIndexPath) {
+                indexPath = self.zf_playingIndexPath;
+                finalIndexPath = indexPath;
+                *stop = YES;
+                return;
+            }
             if (!finalIndexPath || centerSpacing < finalSpace) {
                 finalIndexPath = indexPath;
                 finalSpace = centerSpacing;
