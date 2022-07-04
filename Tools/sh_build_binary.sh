@@ -18,15 +18,18 @@ IS_OPEN_XCFRAMEWORK=NO
 PROJECT_NAME=''
 #通过podSpec 获取工程名
 PODSPEC_PATH=$(find . -name "*.podspec")
-if [ ${#PODSPEC_PATH} -lt 1 ]; then
-    echo "！！！！！当前目录下未找到podspec文件,退出二进制archive！！！！！"
+PODSPEC_NAME=''
+for item in ${PODSPEC_PATH[*]}; do
+    itemName=$(basename $item)
+    if [[ !($itemName =~ "_CT") ]]; then
+        PODSPEC_NAME=$itemName
+        PROJECT_NAME=${itemName%.podspec}
+    fi
+done
+
+if [[ (${#PODSPEC_PATH} -lt 1) || (${#PODSPEC_NAME} -lt 1) ]]; then
+    echo "当前目录下未找到podspec文件,退出二进制发布流程"
     exit 1
-else
-    PODSPEC_NAME=$(basename $PODSPEC_PATH)
-    PODS_NAME=${PODSPEC_NAME%.podspec}
-    echo "组件名:"
-    echo "${PODS_NAME}"
-    PROJECT_NAME=$PODS_NAME
 fi
 
 BUILD_BASE_PATH='../Build'
@@ -172,7 +175,7 @@ fi
 cd ..
 BIN_PUSH_SOURCE_REPO=${SOURCE_SPECS}
 BIN_PUSH_SOURCE_REPO=${BIN_PUSH_SOURCE_REPO/"${BIN_SOURCE_REPO},"/}
-podsReleasePush $CURRENT_REPO $BIN_PUSH_SOURCE_REPO $BIN_SOURCE_REPO
+podsReleasePush $CURRENT_REPO $PODSPEC_NAME $BIN_PUSH_SOURCE_REPO $BIN_SOURCE_REPO
 RELEASE_RESULT=$?
 # 二进制组件发布结果
 HTTP_GX='(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]'

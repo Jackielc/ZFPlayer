@@ -1,7 +1,20 @@
 #!/bin/bash
 #Created by wangyongxin on 2022/02/28
 
-source '../Tools/tool_functions.sh'
+# 计算时间间隔 $2 - $1，并以01:01的格式进行打印
+function tool_get_time_interval() {
+    begin=$1
+    end=$2
+    ci_cost_time=$(($end - $begin))
+
+    min=$(($ci_cost_time / 60))
+    min=$(printf "%0.2d" ${min})
+
+    second=$(($ci_cost_time % 60))
+    second=$(printf "%0.2d" ${second})
+
+    echo "${min}:${second}"
+}
 
 #组件发布通知
 # param 1 : success
@@ -27,7 +40,6 @@ function webhookMessage() {
     hookUrl="https://open.feishu.cn/open-apis/bot/v2/hook/71a8a82a-ee40-442e-aff6-8d626d2feb08"
     if $PUSH_SUCCESS; then
         cost_time=$(tool_get_time_interval ${CI_BEGAIN_TIME} $(date +%s))
-
         #成功的通知
         content_publish_tag="{\"tag\":\"text\",\"text\":\"发布tag：$pushTag\n\"}"
         content_publish_author="{\"tag\":\"text\",\"text\":\"发布者：$userName\n\"}"
@@ -38,6 +50,10 @@ function webhookMessage() {
         fi
         content_repo_link="{\"tag\":\"a\",\"text\":\"仓库地址\",\"href\":\"$url\"}"
         message="{\"msg_type\":\"post\",\"content\":{\"post\":{\"zh_cn\":{\"title\":\"$name--${titleDesc}--发布成功\",\"content\":[[${content_publish_tag},${content_publish_author},${content_publish_content},${content_publish_cost_time},${content_repo_link}]]}}}}"
+        if [[ !(${#errorDesc} -lt 1) ]]; then
+            content_publish_tips="{\"tag\":\"text\",\"text\":\"提示：${errorDesc}\n\"}"
+            message="{\"msg_type\":\"post\",\"content\":{\"post\":{\"zh_cn\":{\"title\":\"$name--${titleDesc}--发布成功\",\"content\":[[${content_publish_tag},${content_publish_author},${content_publish_content},${content_publish_tips},${content_publish_cost_time},${content_repo_link}]]}}}}"
+        fi
         hookUrl="https://open.feishu.cn/open-apis/bot/v2/hook/71a8a82a-ee40-442e-aff6-8d626d2feb08"
         res=$(curl -X POST -H "Content-Type: application/json" -d "$message" https://open.feishu.cn/open-apis/bot/v2/hook/71a8a82a-ee40-442e-aff6-8d626d2feb08)
     else
@@ -51,11 +67,12 @@ function webhookMessage() {
 #组件发布
 function podsReleasePush() {
     Repo=$1
-    PODS_SOURCE_SPECS=$2
-    BIN_SOURCE_SPECS=$3
+    PODSPEC_FILE=$2
+    PODS_SOURCE_SPECS=$3
+    BIN_SOURCE_SPECS=$4
 
     SOURCE_SPECS_LIST=(${PODS_SOURCE_SPECS//,/ })
-    echo "当前的发布为：$1, $2, $3"
+    echo "当前的发布为：$1, $2, $3, $4"
     # 校验记录写入的文件  判断完成后会删除
     PUSH_TMP_LOG_FILE="repoPushTmpLog.txt"
     PUSH_SUCCESS_SIGN_ONE="Updating the \`${Repo}\' repo"
@@ -66,9 +83,9 @@ function podsReleasePush() {
     #执行发布
     #发布源中如果包含二进制源，走定制参数发布，否则常规发布
     if [[ "${SOURCE_SPECS_LIST[@]}" =~ "${BIN_SOURCE_SPECS}" ]]; then
-        pod repo push ${Repo} ${PODSPEC_NAME} --sources=${PODS_SOURCE_SPECS} --allow-warnings --use-libraries --use-modular-headers --skip-import-validation | tee ${PUSH_TMP_LOG_FILE}
+        pod repo push ${Repo} ${PODSPEC_FILE} --sources=${PODS_SOURCE_SPECS} --allow-warnings --use-libraries --use-modular-headers --skip-import-validation | tee ${PUSH_TMP_LOG_FILE}
     else
-        pod repo push ${Repo} ${PODSPEC_NAME} --sources=${PODS_SOURCE_SPECS} --allow-warnings --use-libraries --use-modular-headers --skip-import-validation | tee ${PUSH_TMP_LOG_FILE}
+        pod repo push ${Repo} ${PODSPEC_FILE} --sources=${PODS_SOURCE_SPECS} --allow-warnings --use-libraries --use-modular-headers --skip-import-validation | tee ${PUSH_TMP_LOG_FILE}
     fi
     # 对写入到临时文件的内容进行逐行判断, 满足3个条件表示推送成功
     CHECK_MATCH_NUM=0

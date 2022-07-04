@@ -184,6 +184,7 @@ def modifyFrameworkTargetBuildSetting(target)
         build_settings["PRODUCT_BUNDLE_IDENTIFIER"] = "com.shihuo.#{target.name}"
         build_settings["DEVELOPMENT_TEAM"] = "SWTU7N2NXP"
         build_settings["GENERATE_INFOPLIST_FILE"] = "YES"
+        build_settings["OTHER_SWIFT_FLAGS"] = "$(inherited) -Xcc -Wno-error=non-modular-include-in-framework-module"
         build_settings.each do |key, value|
             # puts "#{key} == #{value}"
         end    

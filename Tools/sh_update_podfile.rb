@@ -8,10 +8,10 @@ require './sh_modify_podfile.rb'
 def configPodBinSwitch(a)
     # 开始改写podfile
     projectName = a.first
-    @@PODSPEC_PATH = "../#{projectName}.podSpec"
+    $PODSPEC_PATH = "../#{projectName}.podSpec"
     temp_file = Tempfile.new("#{projectName}.podSpec")
     begin   
-        podfile = File.open(@@PODSPEC_PATH, "r")
+        podfile = File.open($PODSPEC_PATH, "r")
         is_contain=false
         podfile.each do |line|
             if line.include?("SH_pod_bin")
@@ -24,7 +24,7 @@ def configPodBinSwitch(a)
                 temp_file.puts line
             end    
         end
-        FileUtils.mv(temp_file.path, @@PODSPEC_PATH)
+        FileUtils.mv(temp_file.path, $PODSPEC_PATH)
     ensure
         temp_file.close
         temp_file.unlink

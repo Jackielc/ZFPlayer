@@ -5,10 +5,22 @@ require 'tempfile'
 require 'fileutils'
 
 class SHBinModifyPodSpec
-
-    @@project_name=""
+    #工程名
+    @@project_name = ""
     #二进制包链接
-    @@binary_source=""
+    @@binary_source = ""
+    #判断是否包含subSpec
+    @@is_include_subspec = false
+    #xxconfig配置内容
+    @@exist_pod_target_xcconfig = ""
+    @@exist_user_target_xcconfig = ""
+    POD_TARGET_XCCONFIG_SYMBOL = "s.pod_target_xcconfig"
+    USER_TARGET_XCCONFIG_SYMBOL = "s.user_target_xcconfig"
+    $dependencys = Array.new
+    #subSepc 识别标识
+    SUBSPEC_SYMBOL = ".subspec" 
+    #依赖
+    DEPENDENCY_SYMBOL = "dependency" 
     #判断是否包含bundle
     def SHBinModifyPodSpec.judgeBundle(project_name)
         @@bundle_path = "../Build/#{project_name}/#{project_name}.bundle"
@@ -16,7 +28,26 @@ class SHBinModifyPodSpec
             return true
         end 
         return false   
-    end    
+    end
+    #判断源Spec文件包含的一些内容
+    def SHBinModifyPodSpec.judgeContent(paths)
+        podspec = File.open(paths, "r")
+        podspec.each do |line|
+            if line.include?(SUBSPEC_SYMBOL)
+                @@is_include_subspec = true
+            elsif line.include?(POD_TARGET_XCCONFIG_SYMBOL) 
+                @@exist_pod_target_xcconfig = line.match('[^{\}]+(?=})')     
+            elsif line.include?(USER_TARGET_XCCONFIG_SYMBOL) 
+                @@exist_user_target_xcconfig = line.match('[^{\}]+(?=})')  
+            elsif line.include?(DEPENDENCY_SYMBOL)
+                keyIndex = line.index(DEPENDENCY_SYMBOL)
+                keyIndex += DEPENDENCY_SYMBOL.length
+                subStr = line[keyIndex, line.length]
+                puts "当前的依赖库---:#{subStr}"
+                $dependencys.push(subStr)          
+            end    
+        end
+    end   
 
     def SHBinModifyPodSpec.modifyAction(params)
         puts "开始修改 podspec #{params}"
@@ -25,28 +56,31 @@ class SHBinModifyPodSpec
         @@is_xcframework = params[2]
         #文件路径
         @@PODSPEC_PATH = "../#{@@project_name}.podspec"
+        SHBinModifyPodSpec.judgeContent(@@PODSPEC_PATH)
         #  ss.source           = { :http => 'https://sh-mobile-archive.oss-cn-hangzhou.aliyuncs.com/ios/SHFoundation/0.0.6.1/SHFoundation.framework.zip' }
-        pod_source = "s.source           = { :http => '#{@@binary_source}' }"
+        pod_source = "  s.source           = { :http => '#{@@binary_source}' }"
         # framework引用
-        pod_vendored_frameworks = "  s.ios.vendored_frameworks = '#{@@project_name}/#{@@project_name}.framework'"
+        pod_vendored_frameworks = ".ios.vendored_frameworks = '#{@@project_name}/#{@@project_name}.framework'"
+        spec_another_name = "s"
+        # 新建二进制subSpec
+        bin_subSpec_name = "binSpec"
+        subSpec_another_name = "ss"
+        default_Spec_symbol = "  s.default_subspec = '#{bin_subSpec_name}'"
+        bin_subSpec_Head_symbol = "  #{spec_another_name}.subspec '#{bin_subSpec_name}' do |ss|"
+        subSpec_end_symbol = " end"
+        bin_subSpec_dependency = "    #{subSpec_another_name}.dependency '#{@@project_name}/#{bin_subSpec_name}'"
         # resources引用
-        pod_resources_bundle = "  s.resources = '#{@@project_name}/#{@@project_name}.bundle'"
-        pod_source_key1 = "s.source"
-        pod_source_key2 = ":git =>"
-        pod_source_file = "source_files"
-        pod_source_bundles_key1 = "resource_bundle"
-        pod_source_bundles_key2 = "Assets/"
-        pod_source_bundles_key3 = "}"
+        pod_resources_bundle = ".resources = '#{@@project_name}/#{@@project_name}.bundle'"
+        pod_source_prefix_symbol = "s.source"
+        pod_source_path_symbol = ":git =>"
+        pod_source_file_symbol = "source_files"
+        pod_source_bundles_prefix_symbol = "resource_bundle"
+        pod_source_bundles_path_symbol = "Assets/"
+        pod_source_bundles_end_symbol = "}"
         #fat framework 屏蔽掉 模拟器的 arm64 架构
         pod_excluded_archs = "'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64'"
-        pod_target_xcconfig_symbol = "s.pod_target_xcconfig"
-        user_target_xcconfig_symbol = "s.user_target_xcconfig"
-        pod_target_xcconfig = "#{pod_target_xcconfig_symbol} = { #{pod_excluded_archs} }"
-        user_target_xcconfig = "#{user_target_xcconfig_symbol} = { #{pod_excluded_archs} }"
-        exist_pod_target_xcconfig = ""
-        exist_user_target_xcconfig = ""
-        # 识别依赖开始，在之前写入 pod_target_xcconfig
-        dependency_symbol = "dependency" 
+        pod_target_xcconfig = "#{POD_TARGET_XCCONFIG_SYMBOL} = { #{pod_excluded_archs} }"
+        user_target_xcconfig = "#{USER_TARGET_XCCONFIG_SYMBOL} = { #{pod_excluded_archs} }"
         if @@project_name.nil? || @@project_name.empty?
             puts "工程名字参数为空"
             return
@@ -55,47 +89,74 @@ class SHBinModifyPodSpec
         temp_file = Tempfile.new(@@project_name + '.podspec')
         begin
             is_bundles = false
-            is_first_dependency = true
+            is_subSepc_begin = false
             podspec = File.open(@@PODSPEC_PATH, "r")
             podspec.each do |line|
-                if line.include?(pod_source_key1) && line.include?(pod_source_key2)
+                if line.include?(pod_source_prefix_symbol) && line.include?(pod_source_path_symbol)
                     #添加二进制地址依赖
                     is_bundles = false
-                    temp_file.puts pod_source       
-                elsif line.include?(pod_source_file) 
+                    temp_file.puts pod_source 
+                    # xxconfig配置写入
+                    if @@exist_pod_target_xcconfig.length > 0 
+                        pod_target_xcconfig = "  #{POD_TARGET_XCCONFIG_SYMBOL} = { #{pod_excluded_archs}, #{@@exist_pod_target_xcconfig} }"
+                        temp_file.puts pod_target_xcconfig + "\n"
+                    else    
+                        temp_file.puts "  #{POD_TARGET_XCCONFIG_SYMBOL} = { #{pod_excluded_archs} }" + "\n"
+                    end
+
+                    if @@exist_user_target_xcconfig.length > 0 
+                        user_target_xcconfig = "  #{USER_TARGET_XCCONFIG_SYMBOL} = { #{pod_excluded_archs}, #{@@exist_user_target_xcconfig} }"
+                        temp_file.puts user_target_xcconfig + "\n" 
+                    else 
+                        temp_file.puts "  #{USER_TARGET_XCCONFIG_SYMBOL} = { #{pod_excluded_archs} }" + "\n"     
+                    end 
+                    #二进制依赖包写入，区分是否含有subSpec
+                    if @@is_include_subspec == false 
+                        temp_file.puts "  #{spec_another_name}#{pod_vendored_frameworks}" + "\n"
+                        if SHBinModifyPodSpec.judgeBundle(@@project_name)
+                            temp_file.puts "  #{spec_another_name}#{pod_resources_bundle}" + "\n"
+                        end
+                    else
+                        temp_file.puts default_Spec_symbol + "\n"
+                        temp_file.puts bin_subSpec_Head_symbol + "\n"
+                        temp_file.puts "    #{subSpec_another_name}#{pod_vendored_frameworks}" + "\n"
+                        if SHBinModifyPodSpec.judgeBundle(@@project_name)
+                            temp_file.puts "    #{subSpec_another_name}#{pod_resources_bundle}" + "\n"
+                        end
+                        #添加该组件库中所有的依赖
+                        $dependencys.each do |item|
+                            temp_file.puts "   #{subSpec_another_name}.dependency #{item}"
+                        end
+                        temp_file.puts subSpec_end_symbol + "\n"
+                    end 
+                elsif line.include?(pod_source_file_symbol) 
                     #注释掉源码依赖, 切换二进制依赖
                     is_bundles = false
-                    if SHBinModifyPodSpec.judgeBundle(@@project_name)
-                        temp_file.puts '#' + line + "\n" + pod_vendored_frameworks + "\n" + pod_resources_bundle + "\n"
-                    elsif
-                        temp_file.puts '#' + line + "\n" + pod_vendored_frameworks + "\n"
-                    end    
-                elsif line.include?(pod_source_bundles_key1) || line.include?(pod_source_bundles_key2)
+                    temp_file.puts '#' + line + "\n"
+                elsif line.include?(pod_source_bundles_prefix_symbol) || line.include?(pod_source_bundles_path_symbol)
                     temp_file.puts '#' + line 
                     is_bundles = true
-                elsif line.include?(pod_source_bundles_key3) && is_bundles
+                elsif line.include?(pod_source_bundles_end_symbol) && is_bundles
                     #注释掉源码资源依赖
                     is_bundles = false
                     temp_file.puts '#' + line 
-                elsif line.include?(pod_target_xcconfig_symbol) 
+                elsif line.include?(POD_TARGET_XCCONFIG_SYMBOL) || line.include?(USER_TARGET_XCCONFIG_SYMBOL)
                     is_bundles = false
-                    exist_pod_target_xcconfig = line.match('[^{\}]+(?=})')
-                elsif line.include?(user_target_xcconfig_symbol) 
-                    is_bundles = false
-                    exist_user_target_xcconfig = line.match('[^{\}]+(?=})')
-                elsif line.include?(dependency_symbol) && is_first_dependency
-                    is_bundles = false
-                    if exist_pod_target_xcconfig.length > 0 
-                        pod_target_xcconfig = "  #{pod_target_xcconfig_symbol} = { #{pod_excluded_archs}, #{exist_pod_target_xcconfig} }"
-                    end    
-                    if exist_user_target_xcconfig.length > 0 
-                        user_target_xcconfig = "  #{user_target_xcconfig_symbol} = { #{pod_excluded_archs}, #{exist_user_target_xcconfig} }"
-                    end 
-                    temp_file.puts pod_target_xcconfig + "\n" + user_target_xcconfig + "\n" + line 
-                    is_first_dependency = false
+                elsif line.include?(SUBSPEC_SYMBOL)
+                    is_subSepc_begin = true
+                    temp_file.puts line + "\n"
+                    temp_file.puts bin_subSpec_dependency 
+                elsif line.include?(subSpec_end_symbol)    
+                    is_subSepc_begin = false
+                    temp_file.puts line 
                 else
                     is_bundles = false
-                    temp_file.puts line 
+                    if is_subSepc_begin == true 
+                        #puts "subSpec中的内容#{line}"
+                        temp_file.puts '#' + line
+                    else
+                        temp_file.puts line 
+                    end
                 end    
             end
             temp_file.close
@@ -106,5 +167,4 @@ class SHBinModifyPodSpec
         end
     end    
 end    
-
 SHBinModifyPodSpec.modifyAction(ARGV)

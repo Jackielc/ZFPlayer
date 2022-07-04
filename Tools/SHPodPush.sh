@@ -52,6 +52,7 @@ function rewriteFileContentOfLine() {
     sed -i '' "s%${OID_TMP_STRING}%${NEW_TMP_STRING}%g" $FILE_NAME
 }
 source './Tools/sh_pod_release.sh'
+
 # 飞书结果通知
 webhook() {
     webhookMessage $1 "源码" $NEW_VERSION $Tag_Author $2
@@ -82,6 +83,9 @@ Tag_Author=""
 Publish_Content=""
 Last_Commmit_Msg=""
 USER_VERSION_POSITION="" #要变更的版本位
+#发布开关控制
+POD_BIN_SYMBOL="SH_pod_bin = true"
+POD_CT_SYMBOL="SH_pod_CT = true"
 
 # CI_PIPELINE_ID=1
 # 是否走CI发布
@@ -91,7 +95,6 @@ if [ $CI_PIPELINE_ID ] >0; then
 fi
 AUTOMATIC_PROCESS=$isPipeline
 #echo "CI开始---${CI_PIPELINE_ID}---${isPipeline}---${AUTOMATIC_PROCESS}"
-
 prepareParams() {
     arr=($(echo $ARG_BRANCH_TAG | tr '_' ' '))
     # echo ${arr[@]}
@@ -208,7 +211,7 @@ getRepo() {
     BinRepoIndex=$item_index
     echo "即将自动发布的仓库是:${Repo}, ${RepoIndex}"
 }
-#选择发布的repo
+echo "---------------- 选择发布的repo处理 -----------------------"
 #[AUTO]替换目标repo
 getRepo
 #二进制源repo
@@ -234,34 +237,41 @@ if [[ ${IsContainBinRepo} == false ]]; then
     pod repo add ${BIN_REPO} ${RepoPathList[$BinRepoIndex]}
 fi
 
-# 显示当前工作目录的分支号
-BRANCH_NAME=$(git symbolic-ref --short -q HEAD)
-echo_success "当前选择的组件分支:(${BRANCH_NAME})"
-# 获取.podspec文件
+echo "----------------- 获取.podspec文件 -----------------------"
 PODSPEC_PATH=$(find . -name "*.podspec")
-if [ ${#PODSPEC_PATH} -lt 1 ]; then
+#CT的podSepc
+PODSPEC_CT_NAME=''
+#是否开启CT调用
+is_open_CT=0
+#组件的源码的podSpec
+PODSPEC_NAME=''
+PODS_NAME=''
+for item in ${PODSPEC_PATH[*]}; do
+    itemName=$(basename $item)
+    if [[ $itemName =~ "_CT" ]]; then
+        PODSPEC_CT_NAME=$itemName
+    else
+        PODSPEC_NAME=$itemName
+        PODS_NAME=${itemName%.podspec}
+        echo "组件名：${PODS_NAME}"
+    fi
+done
+
+if [[ (${#PODSPEC_PATH} -lt 1) || (${#PODSPEC_NAME} -lt 1) ]]; then
     echo "当前目录下未找到podspec文件,退出发布流程"
     exit 1
-else
-    PODSPEC_NAME=$(basename $PODSPEC_PATH)
-    PODS_NAME=${PODSPEC_NAME%.podspec}
-    echo "组件名:"
-    echo "${PODS_NAME}"
 fi
 
-# # 合并代码检测，自动发布不执行
-# #同步远程代码
-# git stash
-# git pull origin $(git rev-parse --abbrev-ref HEAD) --tags
-# git stash pop
+echo "----------------- 是否发布CT引用 ---------------"
+if [[ !(${#PODSPEC_CT_NAME} -lt 1) ]]; then
+    fileIsContainContent $PODSPEC_CT_NAME "${POD_CT_SYMBOL}"
+    is_open_CT=$?
+    echo "组件开启CT：${is_open_CT}"
+else
+    echo "------ 该组件没有提供CT调用方式 -------"
+fi
 
-# #[AUTO]:不必检查，自动发布以远程分支为准
-# ConflicCount=$(git ls-files -u | wc -l)
-# if [ "$ConflicCount" -gt 0 ]; then
-#     echo_warning "git有冲突，请执行git status查看冲突文件"
-#     exit 1
-# fi
-
+echo '-----------------获取上一个tag------------------'
 LAST_VERISON=$(git describe --tags $(git rev-list --tags --max-count=1))
 #自动发布筛选历史记录中成功发布的tag
 #灰度修复线上的版本匹配
@@ -291,43 +301,6 @@ fi
 echo "自动更新版本号：[$LAST_VERISON]"
 echo_success "组件仓库最后一次提交的标签版本号是 [$LAST_VERISON]"
 log_line
-# lint 校验过程下线
-# # 校验记录写入的文件  判断完成后会删除
-# TMP_LOG_FILE="lintTmpLog.txt"
-# LINT_SUCCESS_SIGN="${PODS_NAME} passed validation"
-
-# # #本地效验
-# $(>$TMP_LOG_FILE)
-# echo "当前的spec源地址：$SOURCE_SPECS"
-
-# if [ $AUTOMATIC_PROCESS == 1 ]; then
-#     pod lib lint --sources=${SOURCE_SPECS} --allow-warnings | tee ${TMP_LOG_FILE}
-# else
-#     pod lib lint --sources=${SOURCE_SPECS} --allow-warnings --verbose | tee ${TMP_LOG_FILE}
-# fi
-
-# # 对写入到临时文件的内容进行逐行判断, 满足3个条件表示推送成功
-# LINT_SUCCESS=false
-
-# while read TMP_LINE; do
-#     echo $TMP_LINE
-#     if [[ $TMP_LINE == *$LINT_SUCCESS_SIGN* ]]; then
-#         LINT_SUCCESS=true
-#     fi
-# done <$TMP_LOG_FILE
-
-# # 移除临时的目录
-# rm $TMP_LOG_FILE
-
-# # 推送成功和推送失败的提示不一样
-# if [[ ${LINT_SUCCESS} == true ]]; then
-#     echo_success "pod lib lint 通过，可以发布!!!!"
-
-# else
-#     echo_warning "pod lib lint 失败, 请检查!!!!"
-#     webhook false "pod lin lint failed, check !!!"
-#     exit 1
-# fi
 
 echo '-----------------生成发布tag------------------'
 log_line
@@ -408,6 +381,9 @@ echo_success "新的版本号为：${NEW_VERSION}"
 
 #修改podspec版本号
 rewriteFileContentOfLine $PODSPEC_NAME "s.version" $NEW_VERSION
+if [ $is_open_CT == 1 ]; then
+    rewriteFileContentOfLine $PODSPEC_CT_NAME "s.version" $NEW_VERSION
+fi
 
 echo "----------------提交发布信息------------------"
 
@@ -472,7 +448,7 @@ PUSH_SOURCE_REPO=${SOURCE_SPECS}
 PUSH_SOURCE_REPO=${PUSH_SOURCE_REPO/"${BIN_SOURCE_REPO},"/}
 echo '-----------------开始发布本次组发布--------------'
 #执行发布
-podsReleasePush $Repo $PUSH_SOURCE_REPO $BIN_SOURCE_REPO
+podsReleasePush $Repo $PODSPEC_NAME $PUSH_SOURCE_REPO $BIN_SOURCE_REPO
 RELEASE_RESULT=$?
 
 # 推送成功和推送失败的提示不一样
@@ -483,6 +459,7 @@ else
     webhook false "${NEW_VERSION} pod repo push failed, check !!!"
     #修改podspec版本号
     rewriteFileContentOfLine $PODSPEC_NAME "s.version" $LAST_VERISON
+    rewriteFileContentOfLine $PODSPEC_CT_NAME "s.version" $LAST_VERISON
     git push origin :refs/tags/$NEW_VERSION
     git tag -d $NEW_VERSION
     git add .
@@ -491,15 +468,36 @@ else
     exit 1
 fi
 
+CT_RELEASE_TIPS=""
+if [ $is_open_CT == 1 ]; then
+    podsReleasePush $Repo $PODSPEC_CT_NAME $PUSH_SOURCE_REPO $BIN_SOURCE_REPO
+    CT_RELEASE_RESULT=$?
+    if [ $CT_RELEASE_RESULT == 1 ]; then
+        CT_RELEASE_TIPS="组件CT发布成功"
+        echo_success $CT_RELEASE_TIPS
+        #CT发布同步到二进制repo
+        podsReleasePush $BIN_REPO $PODSPEC_CT_NAME $PUSH_SOURCE_REPO $BIN_SOURCE_REPO
+    else
+        CT_RELEASE_TIPS="${NEW_VERSION}版本组件CT发布失败"
+        echo_warning $CT_RELEASE_TIPS
+        rewriteFileContentOfLine $PODSPEC_CT_NAME "s.version" $LAST_VERISON
+        git push origin :refs/tags/$NEW_VERSION
+        git tag -d $NEW_VERSION
+        git add .
+        git commit "组件CT发布失败，恢复"
+        git push origin HEAD:master --porcelain
+    fi
+fi
+
 log_line
 echo_success "----------------开始更新发布机器机repo------------------"
 tool_update_shihuo_repo
-webhook true
+webhook true $CT_RELEASE_TIPS
 
 if [ "$USER_CHOOESD_REPO" != $RELEASE ] && [ "$USER_CHOOESD_REPO" != $GRAY ]; then
     echo_success "------------------当前环境${USER_CHOOESD_REPO}屏蔽二进制----------------"
 else
-    fileIsContainContent $PODSPEC_NAME "SH_pod_bin = true"
+    fileIsContainContent $PODSPEC_NAME "${POD_BIN_SYMBOL}"
     is_binary=$?
     if [[ $is_binary == 1 ]]; then
         echo "组件${PROJIECT_NAME}开启二进制"
@@ -514,7 +512,59 @@ else
         sh ./Tools/sh_build_binary.sh $BIN_REPO $SOURCE_SPECS $NEW_VERSION $Tag_Author $BIN_SOURCE_REPO
     else
         echo_success "------------------组件没有开启二进制----------------"
-        podsReleasePush $BIN_REPO $PUSH_SOURCE_REPO $BIN_SOURCE_REPO
+        podsReleasePush $BIN_REPO $PODSPEC_NAME $PUSH_SOURCE_REPO $BIN_SOURCE_REPO
         tool_update_shihuo_repo
     fi
 fi
+
+#------------------  lint 校验过程下线 -----------------
+# # 校验记录写入的文件  判断完成后会删除
+# TMP_LOG_FILE="lintTmpLog.txt"
+# LINT_SUCCESS_SIGN="${PODS_NAME} passed validation"
+
+# # #本地效验
+# $(>$TMP_LOG_FILE)
+# echo "当前的spec源地址：$SOURCE_SPECS"
+
+# if [ $AUTOMATIC_PROCESS == 1 ]; then
+#     pod lib lint --sources=${SOURCE_SPECS} --allow-warnings | tee ${TMP_LOG_FILE}
+# else
+#     pod lib lint --sources=${SOURCE_SPECS} --allow-warnings --verbose | tee ${TMP_LOG_FILE}
+# fi
+
+# # 对写入到临时文件的内容进行逐行判断, 满足3个条件表示推送成功
+# LINT_SUCCESS=false
+
+# while read TMP_LINE; do
+#     echo $TMP_LINE
+#     if [[ $TMP_LINE == *$LINT_SUCCESS_SIGN* ]]; then
+#         LINT_SUCCESS=true
+#     fi
+# done <$TMP_LOG_FILE
+
+# # 移除临时的目录
+# rm $TMP_LOG_FILE
+
+# # 推送成功和推送失败的提示不一样
+# if [[ ${LINT_SUCCESS} == true ]]; then
+#     echo_success "pod lib lint 通过，可以发布!!!!"
+
+# else
+#     echo_warning "pod lib lint 失败, 请检查!!!!"
+#     webhook false "pod lin lint failed, check !!!"
+#     exit 1
+# fi
+
+#------------------  合并代码检测过程下线 -----------------
+# # 合并代码检测，自动发布不执行
+# #同步远程代码
+# git stash
+# git pull origin $(git rev-parse --abbrev-ref HEAD) --tags
+# git stash pop
+
+# #[AUTO]:不必检查，自动发布以远程分支为准
+# ConflicCount=$(git ls-files -u | wc -l)
+# if [ "$ConflicCount" -gt 0 ]; then
+#     echo_warning "git有冲突，请执行git status查看冲突文件"
+#     exit 1
+# fi
