@@ -84,17 +84,18 @@ def is_resource_group(filePath)
     return false       
 end 
 #创建bundle产物
-
 def copyFile(sourcePath, destPath)
     resource_files = Dir.glob(sourcePath + "/*")
     if resource_files.length > 0
         resource_files.each do |item|
-            if File.directory?(item)
-                copyFile(item, destPath)
-            else 
-                puts "复制的资源文件: #{item}"
-                FileUtils.cp item, destPath
-            end    
+            puts "复制的资源文件: #{item}"
+            FileUtils.cp_r item, destPath
+            # if File.directory?(item)
+            #     copyFile(item, destPath)
+            # else 
+            #     puts "复制的资源文件: #{item}"
+            #     FileUtils.cp item, destPath
+            # end    
         end    
     end 
 end 

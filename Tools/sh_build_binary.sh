@@ -33,9 +33,9 @@ if [[ (${#PODSPEC_PATH} -lt 1) || (${#PODSPEC_NAME} -lt 1) ]]; then
 fi
 
 BUILD_BASE_PATH='../Build'
-BUILD_DEVICE_PATH="${BUILD_BASE_PATH}/ios_device.xcarchive"
-BUILD_SIMULAR_PATH="${BUILD_BASE_PATH}/ios_simulator.xcarchive"
-FRAMEWORK_PATH="/Products/Library/Frameworks/${PROJECT_NAME}.framework"
+FRAMEWORK_PATH="/Build/Products/Release-iphoneos/${PROJECT_NAME}.framework"
+FRAMEWORK_DEVICE_PATH="/Build/Products/Release-iphoneos/${PROJECT_NAME}.framework"
+FRAMEWORK_SIMULA_PATH="/Build/Products/Release-iphonesimulator/${PROJECT_NAME}.framework"
 FRAMEWORK_MODULE_PATH="/Modules/${PROJECT_NAME}.swiftmodule"
 
 cd ./Example
@@ -46,29 +46,29 @@ pod install
 ruby ../Tools/sh_binary_modify_target.rb $PROJECT_NAME
 
 #真机架构
-xcodebuild archive \
+xcodebuild \
     -workspace $PROJECT_NAME.xcworkspace \
     -scheme "lib${PROJECT_NAME}" \
     -configuration Release \
     -destination "generic/platform=iOS" \
-    -archivePath "${BUILD_BASE_PATH}/ios_device.xcarchive" \
+    -derivedDataPath "${BUILD_BASE_PATH}" \
     VALID_ARCHS="arm64 arm64e armv7s armv7" \
     SKIP_INSTALL=NO \
     BUILD_LIBRARY_FOR_DISTRIBUTION=$IS_OPEN_XCFRAMEWORK | xcpretty
 
 #模拟器架构
-xcodebuild archive \
+xcodebuild \
     -workspace $PROJECT_NAME.xcworkspace \
     -scheme "lib${PROJECT_NAME}" \
     -configuration Release \
     -destination "generic/platform=iOS Simulator" \
-    -archivePath "${BUILD_BASE_PATH}/ios_simulator.xcarchive" \
+    -derivedDataPath "${BUILD_BASE_PATH}" \
     VALID_ARCHS="x86_64 i386" \
     SKIP_INSTALL=NO \
     BUILD_LIBRARY_FOR_DISTRIBUTION=$IS_OPEN_XCFRAMEWORK | xcpretty
 
-DEVICE_PATH=$BUILD_DEVICE_PATH$FRAMEWORK_PATH
-SIMULAR_PATH=$BUILD_SIMULAR_PATH$FRAMEWORK_PATH
+DEVICE_PATH=$BUILD_BASE_PATH$FRAMEWORK_DEVICE_PATH
+SIMULAR_PATH=$BUILD_BASE_PATH$FRAMEWORK_SIMULA_PATH
 BUNDLE_PRODUCT_PATH="../${PROJECT_NAME}.bundle"
 #产物路径文件，并创建
 BUILD_PRODUCT_DIRECTORY=$BUILD_BASE_PATH/${PROJECT_NAME}
@@ -91,20 +91,26 @@ else
     BUILD_PRODUCT_PATH=$BUILD_PRODUCT_DIRECTORY/${PROJECT_NAME}.framework
     #复制framework产物
     cp -r $DEVICE_PATH $BUILD_PRODUCT_DIRECTORY
-    #复制bundle产物
+    #复制bundle产物: xxx.xib  assets.car
     if [ -d $BUNDLE_PRODUCT_PATH ]; then
         cp -r $BUNDLE_PRODUCT_PATH $BUILD_PRODUCT_DIRECTORY
-        # 向bundle产物中添加编译后的资源， eg： nib
+        # 向bundle产物中添加编译后的资源
         PRODUCT_FILES=$(ls $BUILD_PRODUCT_PATH)
         for file in $PRODUCT_FILES; do
             if [ "${file##*.}" = "nib" ]; then
                 echo "复制指定文件：${file}"
                 cp -r "${BUILD_PRODUCT_PATH}/${file}" "${BUILD_PRODUCT_DIRECTORY}/${PROJECT_NAME}.bundle"
             fi
+            if [ "${file##*.}" = "car" ]; then
+                echo "复制指定文件：${file}"
+                cp -r "${BUILD_PRODUCT_PATH}/${file}" "${BUILD_PRODUCT_DIRECTORY}/${PROJECT_NAME}.bundle"
+                find "${BUILD_PRODUCT_DIRECTORY}/${PROJECT_NAME}.bundle" -maxdepth 1 -name '*.xcassets' | xargs rm -rf
+            fi
         done
     fi
     #复制模拟器framework中swift架构
     cp -r $SIMULAR_PATH$FRAMEWORK_MODULE_PATH/. $BUILD_PRODUCT_PATH$FRAMEWORK_MODULE_PATH
+    #创建最终产物
     lipo -create \
         $DEVICE_PATH/$PROJECT_NAME \
         $SIMULAR_PATH/$PROJECT_NAME \
@@ -128,6 +134,29 @@ else
     #删除bundle中无关资源
     find ${BUILD_PRODUCT_DIRECTORY}/${PROJECT_NAME}.bundle -maxdepth 1 -name '*.xib' | xargs rm -rf
 fi
+
+#此时bundle内不应该存在xxx.xcassets原始资源文件，检测bundle中如果还存在 .xcassets 文件，遍历取出全部的资源
+function copyAssetsSource() {
+    source_file_path=$1
+    dest_path=$2
+    files=$(ls $source_file_path)
+    for file in $BUNDLE_FILES; do
+        file_path="${source_file_path}/${file}"
+        if [ -d $file ]; then
+            copyAssetsSource $file_path $dest_path
+        elif [ -f $file ]; then
+            cp -r $file_path $dest_path
+        fi
+    done
+}
+BUNDLE_PATH="${BUILD_PRODUCT_DIRECTORY}/${PROJECT_NAME}.bundle"
+BUNDLE_FILES=$(ls $BUNDLE_PATH)
+for file in $BUNDLE_FILES; do
+    if [ "${file##*.}" = "xcassets" ]; then
+        echo "注意：存在图片资源，担未找到找到对饮的压缩文件.car，开始讲源文件解析"
+        copyAssetsSource "${BUNDLE_PATH}/${file}" $BUNDLE_PATH
+    fi
+done
 
 #服务器产物路径
 PRODUCT_URL_PATH=""
