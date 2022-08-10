@@ -207,8 +207,8 @@
 				6003F586195388D20070C39A /* Sources */,
 				6003F587195388D20070C39A /* Frameworks */,
 				6003F588195388D20070C39A /* Resources */,
-				3BEB9DA9930A63C21EB6629E /* [CP] Embed Pods Frameworks */,
 				1CF37B2865ADFFCBEF1807D7 /* gitHooksShell */,
+				32288669D38DDDDDF187DEE4 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -257,7 +257,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 6003F585195388D10070C39A /* Build configuration list for PBXProject "zfplayer" */;
+			buildConfigurationList = 6003F585195388D10070C39A /* Build configuration list for PBXProject "ZFPlayer" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -318,22 +318,22 @@
 			shellPath = /bin/sh;
 			shellScript = "echo \"copy scripts to ./git/hooks\"\n# gitHook同步\nsource_dir=\"${SRCROOT}/Tools/gitHooks\"\nif [ ! -d \"$source_dir\" ]; then \n    source_dir=\"$(dirname ${SRCROOT})/Tools/gitHooks\"\n    \n    if [ ! -d \"$source_dir\" ]; then \n       source_dir=\"\"\n    fi\nfi\necho \"source_dir: ${source_dir}\"\n\ntarget_dir=\"${SRCROOT}/.git/hooks\"\nif [ ! -d \"$target_dir\" ]; then \n    target_dir=\"$(dirname ${SRCROOT})/.git/hooks\"\n    \n    if [ ! -d \"$target_dir\" ]; then \n        target_dir=\"\"\n    fi\nfi\necho \"target_dir: ${target_dir}\"\n\nif [ -n \"$source_dir\" ]  && [ -n \"${target_dir}\" ]; then \n    cp \"${source_dir}/commit-msg\" \"${target_dir}/commit-msg\"\n    cp \"${source_dir}/shTools.py\" \"${target_dir}/shTools.py\"  \nelse\n    echo \"未能定位目录\"\nfi \n";
 		};
-		3BEB9DA9930A63C21EB6629E /* [CP] Embed Pods Frameworks */ = {
+		32288669D38DDDDDF187DEE4 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ZFPlayer_Example/Pods-ZFPlayer_Example-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/ZFPlayer/ZFPlayer.framework",
+				"${PODS_ROOT}/Target Support Files/Pods-ZFPlayer_Example/Pods-ZFPlayer_Example-resources.sh",
+				"${PODS_ROOT}/../../ZFPlayer/Classes/ControlView/ZFPlayer.bundle",
 			);
-			name = "[CP] Embed Pods Frameworks";
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ZFPlayer.framework",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ZFPlayer.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ZFPlayer_Example/Pods-ZFPlayer_Example-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ZFPlayer_Example/Pods-ZFPlayer_Example-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		E5CCE4C7CCF09286738956E6 /* [CP] Check Pods Manifest.lock */ = {
@@ -599,7 +599,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		6003F585195388D10070C39A /* Build configuration list for PBXProject "zfplayer" */ = {
+		6003F585195388D10070C39A /* Build configuration list for PBXProject "ZFPlayer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				6003F5BD195388D20070C39A /* Debug */,

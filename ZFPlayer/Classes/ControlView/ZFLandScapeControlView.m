@@ -98,14 +98,14 @@
     min_x = 0;
     min_y = 0;
     min_w = min_view_w;
-    min_h = iPhoneX ? 110 : 80;
+    min_h = ZFIPhoneX ? 110 : 80;
     self.topToolView.frame = CGRectMake(min_x, min_y, min_w, min_h);
 
-    min_x = (iPhoneX && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) ? 44: 15;
+    min_x = (ZFIPhoneX && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) ? 44: 15;
     if (@available(iOS 13.0, *)) {
-        min_y = UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation) ? 10 : (iPhoneX ? 40 : 20);
+        min_y = UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation) ? 10 : (ZFIPhoneX ? 40 : 20);
     } else {
-        min_y = (iPhoneX && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) ? 10: (iPhoneX ? 40 : 20);
+        min_y = (ZFIPhoneX && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) ? 10: (ZFIPhoneX ? 40 : 20);
     }
     min_w = 40;
     min_h = 40;
@@ -118,13 +118,13 @@
     self.titleLabel.frame = CGRectMake(min_x, min_y, min_w, min_h);
     self.titleLabel.zf_centerY = self.backBtn.zf_centerY;
     
-    min_h = iPhoneX ? 100 : 73;
+    min_h = ZFIPhoneX ? 100 : 73;
     min_x = 0;
     min_y = min_view_h - min_h;
     min_w = min_view_w;
     self.bottomToolView.frame = CGRectMake(min_x, min_y, min_w, min_h);
     
-    min_x = (iPhoneX && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) ? 44: 15;
+    min_x = (ZFIPhoneX && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) ? 44: 15;
     min_y = 32;
     min_w = 30;
     min_h = 30;
@@ -138,7 +138,7 @@
     self.currentTimeLabel.zf_centerY = self.playOrPauseBtn.zf_centerY;
     
     min_w = 62;
-    min_x = self.bottomToolView.zf_width - min_w - ((iPhoneX && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) ? 44: min_margin);
+    min_x = self.bottomToolView.zf_width - min_w - ((ZFIPhoneX && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) ? 44: min_margin);
     min_y = 0;
     min_h = 30;
     self.totalTimeLabel.frame = CGRectMake(min_x, min_y, min_w, min_h);
@@ -151,7 +151,7 @@
     self.slider.frame = CGRectMake(min_x, min_y, min_w, min_h);
     self.slider.zf_centerY = self.playOrPauseBtn.zf_centerY;
     
-    min_x = (iPhoneX && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) ? 50: 18;
+    min_x = (ZFIPhoneX && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) ? 50: 18;
     min_y = 0;
     min_w = 40;
     min_h = 40;
@@ -161,9 +161,9 @@
     if (!self.isShow) {
         self.topToolView.zf_y = -self.topToolView.zf_height;
         self.bottomToolView.zf_y = self.zf_height;
-        self.lockBtn.zf_left = iPhoneX ? -82: -47;
+        self.lockBtn.zf_left = ZFIPhoneX ? -82: -47;
     } else {
-        self.lockBtn.zf_left = iPhoneX ? 50: 18;
+        self.lockBtn.zf_left = ZFIPhoneX ? 50: 18;
         if (self.player.isLockedScreen) {
             self.topToolView.zf_y = -self.topToolView.zf_height;
             self.bottomToolView.zf_y = self.zf_height;
@@ -288,7 +288,7 @@
         self.topToolView.zf_y        = 0;
         self.bottomToolView.zf_y     = self.zf_height - self.bottomToolView.zf_height;
     }
-    self.lockBtn.zf_left             = iPhoneX ? 50: 18;
+    self.lockBtn.zf_left             = ZFIPhoneX ? 50: 18;
     self.player.statusBarHidden      = NO;
     if (self.player.isLockedScreen) {
         self.topToolView.alpha       = 0;
@@ -303,7 +303,7 @@
     self.isShow                      = NO;
     self.topToolView.zf_y            = -self.topToolView.zf_height;
     self.bottomToolView.zf_y         = self.zf_height;
-    self.lockBtn.zf_left             = iPhoneX ? -82: -47;
+    self.lockBtn.zf_left             = ZFIPhoneX ? -82: -47;
     self.player.statusBarHidden      = YES;
     self.topToolView.alpha           = 0;
     self.bottomToolView.alpha        = 0;
