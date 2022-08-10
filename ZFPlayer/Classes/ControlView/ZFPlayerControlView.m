@@ -157,7 +157,7 @@
     self.bottomPgrogress.frame = CGRectMake(min_x, min_y, min_w, min_h);
     
     min_x = 0;
-    min_y = iPhoneX ? 54 : 30;
+    min_y = ZFIPhoneX ? 54 : 30;
     min_w = 170;
     min_h = 35;
     self.volumeBrightnessView.frame = CGRectMake(min_x, min_y, min_w, min_h);
