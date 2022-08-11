@@ -438,6 +438,7 @@ if [[ $PUSHRESULT == *"Done"* && !($PUSHRESULT =~ "rejected") ]]; then
 else
     echo_warning "git push was failed, please check !"
     #删除所有tag
+    git push origin :refs/tags/$NEW_VERSION
     git tag | xargs git tag -d
     webhook false "git push was failed, please check !"
     exit 1

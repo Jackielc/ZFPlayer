@@ -3,11 +3,12 @@
 
 require 'tempfile'
 require 'fileutils'
+require './sh_config_Vari.rb'
 
 class SHModifyPodile
 
     @@PODFILE_PATH = "../Example/podfile"
-    DEVELOPMENT_TARGET = "platform :ios, '9.0'\n"
+    @@DEVELOPMENT_TARGET = "platform :ios, '#{$POD_DEVELOPMENT_TARGET}'\n"
     POD_INSTALL_WAY = "#use_frameworks! \nuse_modular_headers!"
     #关闭bitcode ，并且屏蔽模拟器arm64 架构
     POD_CONFIG = "post_install do |installer| 
@@ -66,7 +67,7 @@ class SHModifyPodile
 
             temp_file.puts @@WORKSPACE
             temp_file.puts @@PROJECT_XCODEPROJ
-            temp_file.puts DEVELOPMENT_TARGET
+            temp_file.puts @@DEVELOPMENT_TARGET
             temp_file.puts POD_INSTALL_WAY
             temp_file.puts "\n"
             temp_file.puts @@SOURCE_TARGET_POD
@@ -102,11 +103,14 @@ class SHModifyPodile
             is_contain_pod_config = false
             podfile = File.open(@@PODFILE_PATH, "r")
             podfile.each do |line|
-                if !line.to_s.start_with?("source")
-                    temp_file.puts line
-                end
-                if line.to_s.start_with?("post_install")
+                next if line.to_s.start_with?("source")
+                if line.to_s.start_with?("platform :ios,")
+                    temp_file.puts @@DEVELOPMENT_TARGET
+                elsif line.to_s.start_with?("post_install")
                     is_contain_pod_config = true
+                    temp_file.puts line
+                else 
+                    temp_file.puts line
                 end    
             end
             if is_contain_pod_config == false

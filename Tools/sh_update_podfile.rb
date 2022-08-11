@@ -4,6 +4,7 @@
 require 'tempfile'
 require 'fileutils'
 require './sh_modify_podfile.rb'
+require './sh_config_Vari.rb'
 
 def configPodBinSwitch(a)
     # 开始改写podfile
@@ -19,6 +20,9 @@ def configPodBinSwitch(a)
                 temp_file.puts line
             elsif line.to_s.start_with?("Pod::Spec.new") && !is_contain
                 item = "#组件是否参与二进制开关 \n#SH_pod_bin = false \n#{line}"
+                temp_file.puts item
+            elsif line.to_s.include?(".ios.deployment_target")
+                item = "  s.ios.deployment_target = '#{$POD_DEVELOPMENT_TARGET}'"
                 temp_file.puts item
             else
                 temp_file.puts line

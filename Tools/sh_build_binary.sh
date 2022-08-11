@@ -106,6 +106,10 @@ else
                 cp -r "${BUILD_PRODUCT_PATH}/${file}" "${BUILD_PRODUCT_DIRECTORY}/${PROJECT_NAME}.bundle"
                 find "${BUILD_PRODUCT_DIRECTORY}/${PROJECT_NAME}.bundle" -maxdepth 1 -name '*.xcassets' | xargs rm -rf
             fi
+            if [ "${file##*.}" = "plist" ]; then
+                echo "复制指定文件：${file}"
+                cp -r "${BUILD_PRODUCT_PATH}/${file}" "${BUILD_PRODUCT_DIRECTORY}/${PROJECT_NAME}.bundle"
+            fi
         done
     fi
     #复制模拟器framework中swift架构

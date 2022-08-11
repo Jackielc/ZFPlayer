@@ -4,6 +4,7 @@
 require 'xcodeproj'
 require 'tempfile'
 require 'fileutils'
+require './sh_config_Vari.rb'
 
 # projectName = ARGV[0]
 # lan = ARGV[1]
@@ -18,7 +19,7 @@ $language = ARGV[1]
 #创建framwork的target 名字
 $targetName = $projectName
 #devlopment_target
-DEVELOPMENT_TARGET = '9.0'
+@@DEVELOPMENT_TARGET = $POD_DEVELOPMENT_TARGET
 #工程路径
 project_file = $projectName + '.xcodeproj'
 project_file_path = "../Example/#{project_file}"
@@ -89,13 +90,7 @@ def copyFile(sourcePath, destPath)
     if resource_files.length > 0
         resource_files.each do |item|
             puts "复制的资源文件: #{item}"
-            FileUtils.cp_r item, destPath
-            # if File.directory?(item)
-            #     copyFile(item, destPath)
-            # else 
-            #     puts "复制的资源文件: #{item}"
-            #     FileUtils.cp item, destPath
-            # end    
+            FileUtils.cp_r item, destPath 
         end    
     end 
 end 
@@ -217,7 +212,7 @@ def createFrameworkTarget(project)
     frameworkGroup = mainGroup.new_group($targetName, File.basename(path), :group)
     product_group = project.products_group
     puts "创建的target的group--#{frameworkGroup.name}"
-    framework_target = Xcodeproj::Project::ProjectHelper.new_target(project, :framework, $targetName, :ios, DEVELOPMENT_TARGET, product_group, $language, $targetName)
+    framework_target = Xcodeproj::Project::ProjectHelper.new_target(project, :framework, $targetName, :ios, @@DEVELOPMENT_TARGET, product_group, $language, $targetName)
     return  framework_target, frameworkGroup
 end    
 

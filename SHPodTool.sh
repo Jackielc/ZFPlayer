@@ -3,8 +3,8 @@
 
 source './Tools/tool_functions.sh'
 
-FEATURE_LISTS=("组件校验工具" "组件修复版本工具" "前往组件仓库")
-FEATURE_FILE_ISTS=("SHPodLint.sh" "SHPodPatch.sh" "gotoGitlab.sh")
+FEATURE_LISTS=("组件校验工具" "更新组件依赖repo source" "组件修复版本工具" "前往组件仓库")
+FEATURE_FILE_ISTS=("SHPodLint.sh" "sh_update_pod_repo_source.rb" "SHPodPatch.sh" "gotoGitlab.sh")
 
 length=${#FEATURE_LISTS[@]}
 
@@ -22,4 +22,8 @@ fi
 
 cd Tools
 
-sh $FEATURE_FLIE
+if [ "${FEATURE_FLIE##*.}" == "rb" ]; then
+    ruby $FEATURE_FLIE
+elif [ "${FEATURE_FLIE##*.}" == "sh" ]; then
+    sh $FEATURE_FLIE
+fi

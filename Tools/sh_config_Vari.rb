@@ -1,0 +1,2 @@
+#配置参数
+$POD_DEVELOPMENT_TARGET = '10.0'
