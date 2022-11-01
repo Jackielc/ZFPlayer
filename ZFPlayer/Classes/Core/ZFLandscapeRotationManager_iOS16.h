@@ -1,8 +1,8 @@
 //
-//  ZFUtilities.m
+//  ZFLandscapeRotationManager_iOS16.h
 //  ZFPlayer
 //
-// Copyright (c) 2016年 任子丰 ( http://github.com/renzifeng )
+// Copyright (c) 2020年 任子丰 ( http://github.com/renzifeng )
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,31 +22,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+#import "ZFLandscapeRotationManager.h"
 
-/// iPhoneX  iPhoneXS  iPhoneXS Max  iPhoneXR 机型判断
-#define ZFIPhoneX ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? ((NSInteger)(([[UIScreen mainScreen] currentMode].size.height/[[UIScreen mainScreen] currentMode].size.width)*100) == 216) : NO)
+NS_ASSUME_NONNULL_BEGIN
 
-#define ZFPlayer_Image(file)                 [ZFUtilities imageNamed:file]
-
-// 屏幕的宽
-#define ZFPlayer_ScreenWidth                 [[UIScreen mainScreen] bounds].size.width
-// 屏幕的高
-#define ZFPlayer_ScreenHeight                [[UIScreen mainScreen] bounds].size.height
-
-#define UIColorFromHex(rgbValue) [UIColor \
-colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 \
-green:((float)((rgbValue & 0xFF00) >> 8))/255.0 \
-blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
-
-@interface ZFUtilities : NSObject
-
-+ (NSString *)convertTimeSecond:(NSInteger)timeSecond;
-
-+ (UIImage *)imageWithColor:(UIColor *)color size:(CGSize)size;
-
-+ (UIImage *)imageNamed:(NSString *)name;
+@interface ZFLandscapeRotationManager_iOS16 : ZFLandscapeRotationManager
 
 @end
 
+NS_ASSUME_NONNULL_END

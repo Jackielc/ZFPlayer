@@ -1,8 +1,8 @@
 //
-//  ZFUtilities.m
+//  ZFLandscapeViewController_iOS15.m
 //  ZFPlayer
 //
-// Copyright (c) 2016年 任子丰 ( http://github.com/renzifeng )
+// Copyright (c) 2020年 任子丰 ( http://github.com/renzifeng )
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,31 +22,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+#import "ZFLandscapeViewController_iOS15.h"
 
-/// iPhoneX  iPhoneXS  iPhoneXS Max  iPhoneXR 机型判断
-#define ZFIPhoneX ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? ((NSInteger)(([[UIScreen mainScreen] currentMode].size.height/[[UIScreen mainScreen] currentMode].size.width)*100) == 216) : NO)
+@implementation ZFLandscapeViewController_iOS15
 
-#define ZFPlayer_Image(file)                 [ZFUtilities imageNamed:file]
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    _playerSuperview = [[UIView alloc] initWithFrame:CGRectZero];
+    _playerSuperview.backgroundColor = [UIColor clearColor];
+    [self.view addSubview:_playerSuperview];
+}
 
-// 屏幕的宽
-#define ZFPlayer_ScreenWidth                 [[UIScreen mainScreen] bounds].size.width
-// 屏幕的高
-#define ZFPlayer_ScreenHeight                [[UIScreen mainScreen] bounds].size.height
+- (BOOL)shouldAutorotate {
+    return [self.delegate ls_shouldAutorotate];
+}
 
-#define UIColorFromHex(rgbValue) [UIColor \
-colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 \
-green:((float)((rgbValue & 0xFF00) >> 8))/255.0 \
-blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return UIInterfaceOrientationMaskAllButUpsideDown;
+}
 
-@interface ZFUtilities : NSObject
-
-+ (NSString *)convertTimeSecond:(NSInteger)timeSecond;
-
-+ (UIImage *)imageWithColor:(UIColor *)color size:(CGSize)size;
-
-+ (UIImage *)imageNamed:(NSString *)name;
+- (BOOL)prefersHomeIndicatorAutoHidden {
+    return YES;
+}
 
 @end
-
