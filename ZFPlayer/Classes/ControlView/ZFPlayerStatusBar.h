@@ -1,5 +1,5 @@
 //
-//  ZFUtilities.m
+//  ZFPlayerStatusBar.h
 //  ZFPlayer
 //
 // Copyright (c) 2016年 任子丰 ( http://github.com/renzifeng )
@@ -22,31 +22,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-/// iPhoneX  iPhoneXS  iPhoneXS Max  iPhoneXR 机型判断
-#define ZFIPhoneX ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? ((NSInteger)(([[UIScreen mainScreen] currentMode].size.height/[[UIScreen mainScreen] currentMode].size.width)*100) == 216) : NO)
+NS_ASSUME_NONNULL_BEGIN
 
-#define ZFPlayer_Image(file)                 [ZFUtilities imageNamed:file]
+@interface ZFPlayerStatusBar : UIView
 
-// 屏幕的宽
-#define ZFPlayer_ScreenWidth                 [[UIScreen mainScreen] bounds].size.width
-// 屏幕的高
-#define ZFPlayer_ScreenHeight                [[UIScreen mainScreen] bounds].size.height
+/// 刷新时间间隔，默认3秒
+@property (nonatomic, assign) NSTimeInterval refreshTime;
 
-#define UIColorFromHex(rgbValue) [UIColor \
-colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 \
-green:((float)((rgbValue & 0xFF00) >> 8))/255.0 \
-blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
+- (void)startTimer;
 
-@interface ZFUtilities : NSObject
-
-+ (NSString *)convertTimeSecond:(NSInteger)timeSecond;
-
-+ (UIImage *)imageWithColor:(UIColor *)color size:(CGSize)size;
-
-+ (UIImage *)imageNamed:(NSString *)name;
+- (void)destoryTimer;
 
 @end
 
+
+
+NS_ASSUME_NONNULL_END
