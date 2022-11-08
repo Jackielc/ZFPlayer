@@ -11,14 +11,33 @@ class SHModifyPodile
     @@DEVELOPMENT_TARGET = "platform :ios, '#{$POD_DEVELOPMENT_TARGET}'\n"
     POD_INSTALL_WAY = "#use_frameworks! \nuse_modular_headers!"
     #关闭bitcode ，并且屏蔽模拟器arm64 架构
-    POD_CONFIG = "post_install do |installer| 
-        installer.pods_project.targets.each do |target|
-            target.build_configurations.each do |config|
-            config.build_settings['ENABLE_BITCODE'] = 'NO'
-            config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+    POD_CONFIG = 
+"post_install do |installer| 
+    installer.pods_project.targets.each do |target|
+        target.build_configurations.each do |config|
+        config.build_settings['ENABLE_BITCODE'] = 'NO'
+        config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+        end
+    end
+    dev_team = ''
+    project = installer.aggregate_targets[0].user_project
+    project.targets.each do |target|
+        target.build_configurations.each do |config|
+            if dev_team.empty? and !config.build_settings['DEVELOPMENT_TEAM'].nil?
+                dev_team = config.build_settings['DEVELOPMENT_TEAM']
             end
         end
-    end "
+    end
+
+    # Fix bundle targets' 'Signing Certificate' to 'Sign to Run Locally'
+    installer.pods_project.targets.each do |target|
+        if target.respond_to?(:product_type) and target.product_type == 'com.apple.product-type.bundle'
+            target.build_configurations.each do |config|
+                config.build_settings['DEVELOPMENT_TEAM'] = dev_team
+            end
+        end
+    end
+end "
 
     # 抓取podspec 中所有的依赖库
     def SHModifyPodile.obtainPodspecDependencys(path)
@@ -93,6 +112,7 @@ class SHModifyPodile
     def SHModifyPodile.modifyWorkSpacePodfile(params)
         # 开始改写podfile
         temp_file = Tempfile.new('podfile')
+        puts '开始改写podfile'
         puts params
         puts temp_file
         begin
@@ -103,12 +123,10 @@ class SHModifyPodile
             is_contain_pod_config = false
             podfile = File.open(@@PODFILE_PATH, "r")
             podfile.each do |line|
+                break if line.to_s.start_with?("post_install")
                 next if line.to_s.start_with?("source")
                 if line.to_s.start_with?("platform :ios,")
                     temp_file.puts @@DEVELOPMENT_TARGET
-                elsif line.to_s.start_with?("post_install")
-                    is_contain_pod_config = true
-                    temp_file.puts line
                 else 
                     temp_file.puts line
                 end    
