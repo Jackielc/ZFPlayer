@@ -110,7 +110,7 @@
     return self;
 }
 
-- (void)updateRotateView:(ZFPlayerView *)rotateView
+- (void)updateRotateView:(UIView *)rotateView
            containerView:(UIView *)containerView {
     self.view = rotateView;
     self.containerView = containerView;
