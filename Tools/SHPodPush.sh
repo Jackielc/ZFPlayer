@@ -64,6 +64,7 @@ function log_line() {
 }
 
 source './Tools/tool_functions.sh'
+source './Tools/upload_event_to_sls_tool.sh'
 
 #校验外部传参，确定手动发布还是自动发布
 ARG_BRANCH_TAG=$1
@@ -96,6 +97,11 @@ fi
 AUTOMATIC_PROCESS=$isPipeline
 #echo "CI开始---${CI_PIPELINE_ID}---${isPipeline}---${AUTOMATIC_PROCESS}"
 prepareParams() {
+    # 初始化记事本，并记录初始时间
+    initRecordTxt
+    # 记录组件名
+    recordKeyValue "page" "${CI_PROJECT_NAME}"
+
     arr=($(echo $ARG_BRANCH_TAG | tr '_' ' '))
     # echo ${arr[@]}
     USER_CHOOESD_REPO=${arr[0]}
@@ -494,6 +500,7 @@ log_line
 echo_success "----------------开始更新发布机器机repo------------------"
 tool_update_shihuo_repo
 webhook true $CT_RELEASE_TIPS
+recordEndTime
 
 if [ "$USER_CHOOESD_REPO" != $RELEASE ] && [ "$USER_CHOOESD_REPO" != $GRAY ]; then
     echo_success "------------------当前环境${USER_CHOOESD_REPO}屏蔽二进制----------------"
