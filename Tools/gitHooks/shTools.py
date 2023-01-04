@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 # encoding: utf-8
 # create by SGQ 2020-02-11
 # 对提交文件进行检测

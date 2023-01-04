@@ -67,21 +67,8 @@ static NSMutableDictionary <NSString* ,NSNumber *> *_zfPlayRecords;
                 [self.controlView videoPlayer:self reachabilityChanged:status];
             }
         }];
-        [self configureVolume];
     }
     return self;
-}
-
-/// Get system volume
-- (void)configureVolume {
-    MPVolumeView *volumeView = [[MPVolumeView alloc] init];
-    self.volumeViewSlider = nil;
-    for (UIView *view in [volumeView subviews]){
-        if ([view.class.description isEqualToString:@"MPVolumeSlider"]){
-            self.volumeViewSlider = (UISlider *)view;
-            break;
-        }
-    }
 }
 
 - (void)dealloc {
@@ -638,6 +625,20 @@ static NSMutableDictionary <NSString* ,NSNumber *> *_zfPlayRecords;
         volume = [[AVAudioSession sharedInstance] outputVolume];
     }
     return volume;
+}
+
+- (UISlider *)volumeViewSlider {
+    if (!_volumeViewSlider) {
+        MPVolumeView *volumeView = [[MPVolumeView alloc] init];
+        _volumeViewSlider = nil;
+        for (UIView *view in [volumeView subviews]){
+            if ([view.class.description isEqualToString:@"MPVolumeSlider"]){
+                _volumeViewSlider = (UISlider *)view;
+                break;
+            }
+        }
+    }
+    return _volumeViewSlider;
 }
 
 - (BOOL)isMuted {
