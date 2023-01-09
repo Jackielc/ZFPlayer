@@ -81,7 +81,7 @@ typedef NS_OPTIONS(NSUInteger, ZFDisablePortraitGestureTypes) {
 @interface ZFOrientationObserver : NSObject
 
 /// update the rotateView and containerView.
-- (void)updateRotateView:(ZFPlayerView *)rotateView
+- (void)updateRotateView:(UIView *)rotateView
            containerView:(UIView *)containerView;
 
 /// Container view of a full screen state player.
