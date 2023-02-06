@@ -10,7 +10,7 @@
 #SH_pod_bin = false 
 Pod::Spec.new do |s|
   s.name             = 'ZFPlayer'
-  s.version          = '12.0.2'
+  s.version          = '12.0.3'
   s.summary          = 'A short description of ZFPlayer.'
  s.swift_version = '5.0'
 
