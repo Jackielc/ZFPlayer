@@ -267,6 +267,7 @@ static NSString *const kPresentationSize         = @"presentationSize";
     _asset = [AVURLAsset URLAssetWithURL:self.assetURL options:self.requestHeader];
     _playerItem = [AVPlayerItem playerItemWithAsset:_asset];
     _player = [AVPlayer playerWithPlayerItem:_playerItem];
+    _player.muted = self.muted;
     _imageGenerator = [AVAssetImageGenerator assetImageGeneratorWithAsset:_asset];
 
     [self enableAudioTracks:YES inPlayerItem:_playerItem];
