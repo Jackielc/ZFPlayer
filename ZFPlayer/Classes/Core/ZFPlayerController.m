@@ -263,7 +263,9 @@ static NSMutableDictionary <NSString* ,NSNumber *> *_zfPlayRecords;
         _notification.didBecomeActive = ^(ZFPlayerNotification * _Nonnull registrar) {
             @zf_strongify(self)
             if (self.isViewControllerDisappear) return;
-            if (self.isPauseByEvent) self.pauseByEvent = NO;
+            if (self.playContinueWhenAppBecomeActive && self.isPauseByEvent) {
+                self.pauseByEvent = NO;
+            }
             self.orientationObserver.lockedScreen = NO;
         };
         _notification.oldDeviceUnavailable = ^(ZFPlayerNotification * _Nonnull registrar) {
@@ -664,6 +666,13 @@ static NSMutableDictionary <NSString* ,NSNumber *> *_zfPlayRecords;
     return YES;
 }
 
+- (BOOL)playContinueWhenAppBecomeActive {
+    NSNumber *number = objc_getAssociatedObject(self, _cmd);
+    if (number) return number.boolValue;
+    self.playContinueWhenAppBecomeActive = YES;
+    return YES;
+}
+
 - (void (^)(id<ZFPlayerMediaPlayback> _Nonnull, NSURL * _Nonnull))playerPrepareToPlay {
     return objc_getAssociatedObject(self, _cmd);
 }
@@ -765,6 +774,10 @@ static NSMutableDictionary <NSString* ,NSNumber *> *_zfPlayRecords;
 
 - (void)setPauseWhenAppResignActive:(BOOL)pauseWhenAppResignActive {
     objc_setAssociatedObject(self, @selector(pauseWhenAppResignActive), @(pauseWhenAppResignActive), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (void)setPlayContinueWhenAppBecomeActive:(BOOL)playContinueWhenAppBecomeActive {
+    objc_setAssociatedObject(self, @selector(playContinueWhenAppBecomeActive), @(playContinueWhenAppBecomeActive), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (void)setPlayerPrepareToPlay:(void (^)(id<ZFPlayerMediaPlayback> _Nonnull, NSURL * _Nonnull))playerPrepareToPlay {
