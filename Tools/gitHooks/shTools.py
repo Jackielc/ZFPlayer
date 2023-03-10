@@ -21,8 +21,8 @@ def get_commit_message():
         message = data.readline()
 
         # 编码问题
-        if type(message) == type(u'Hello World! \u00f8'):
-            message = message.encode('unicode-escape').decode('string_escape')
+        # if type(message) == type(u'Hello World! \u00f8'):
+        #     message = message.encode('unicode-escape').decode('string_escape')
 
         # 变换
         message = message.strip('\n').strip(" ").lower()
