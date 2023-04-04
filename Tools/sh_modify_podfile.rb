@@ -120,7 +120,6 @@ end "
                 line = "source '#{item}'"
                 temp_file.puts line
             end 
-            is_contain_pod_config = false
             podfile = File.open(@@PODFILE_PATH, "r")
             podfile.each do |line|
                 break if line.to_s.start_with?("post_install")
@@ -131,10 +130,7 @@ end "
                     temp_file.puts line
                 end    
             end
-            if is_contain_pod_config == false
-                temp_file.puts "\n"
-                temp_file.puts POD_CONFIG
-            end    
+            temp_file.puts POD_CONFIG
             temp_file.close
             FileUtils.mv(temp_file.path, @@PODFILE_PATH)
         ensure

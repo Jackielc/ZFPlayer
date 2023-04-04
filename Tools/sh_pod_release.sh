@@ -109,3 +109,23 @@ function podsReleasePush() {
         return 0
     fi
 }
+
+#直接发布的
+function skipCheckRelease() {
+    path_param=$1
+    version_param=$2
+    podSpec_name=$3
+    current_path=$(pwd)
+    cp "${current_path}/${podSpec_name}" $path_param
+    cd "${path_param}/.."
+    git status
+    git add .
+    git commit -a -m "${version_param} 版本发布"
+    PUSHRESULT=$(git push origin master --porcelain)
+    cd $current_path
+    if [[ $PUSHRESULT == *"Done"* && !($PUSHRESULT =~ "rejected") ]]; then
+        return 1
+    else
+        return 0
+    fi
+}

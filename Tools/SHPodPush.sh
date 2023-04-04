@@ -87,6 +87,7 @@ USER_VERSION_POSITION="" #要变更的版本位
 #发布开关控制
 POD_BIN_SYMBOL="SH_pod_bin = true"
 POD_CT_SYMBOL="SH_pod_CT = true"
+POD_SKIP_CHECK="POD_SKIP_CHECK = true"
 
 # CI_PIPELINE_ID=1
 # 是否走CI发布
@@ -249,6 +250,8 @@ PODSPEC_PATH=$(find . -name "*.podspec")
 PODSPEC_CT_NAME=''
 #是否开启CT调用
 is_open_CT=0
+#是否开启跳过校验
+is_open_skip_check=0
 #组件的源码的podSpec
 PODSPEC_NAME=''
 PODS_NAME=''
@@ -455,8 +458,32 @@ PUSH_SOURCE_REPO=${SOURCE_SPECS}
 PUSH_SOURCE_REPO=${PUSH_SOURCE_REPO/"${BIN_SOURCE_REPO},"/}
 echo '-----------------开始发布本次组发布--------------'
 #执行发布
-podsReleasePush $Repo $PODSPEC_NAME $PUSH_SOURCE_REPO $BIN_SOURCE_REPO
-RELEASE_RESULT=$?
+fileIsContainContent $PODSPEC_NAME "${POD_SKIP_CHECK}"
+is_open_skip_check=$?
+if [ $is_open_skip_check == 1 ]; then
+    is_release="1"
+    if [ "$USER_CHOOESD_REPO" != $RELEASE ]; then
+        is_release="0"
+    fi
+    cd ./Tools
+    results=$(ruby sh_releaseVersionCheckResult.rb $NEW_VERSION $PODS_NAME $Repo $is_release)
+    cd ..
+    result=(${results//:/ })
+    isValite="${result[0]}"
+    valiteReason="${result[1]}"
+    if [[ $isValite == "1" ]]; then
+        RELEASE_RESULT=1
+        release_path="${result[2]}"
+        echo "开始执行跳过校验发布${release_path}, ${RELEASE_RESULT}"
+        skipCheckRelease $release_path $NEW_VERSION $PODSPEC_NAME
+    else
+        RELEASE_RESULT=0
+        echo_warning "${NEW_VERSION}版本组件发布失败, ${valiteReason}请检查!! -_- !!"
+    fi
+else
+    podsReleasePush $Repo $PODSPEC_NAME $PUSH_SOURCE_REPO $BIN_SOURCE_REPO
+    RELEASE_RESULT=$?
+fi
 
 # 推送成功和推送失败的提示不一样
 if [ $RELEASE_RESULT == 1 ]; then
@@ -517,10 +544,25 @@ else
         cd ..
         echo $(pwd)
         #开始二进制发布
-        sh ./Tools/sh_build_binary.sh $BIN_REPO $SOURCE_SPECS $NEW_VERSION $Tag_Author $BIN_SOURCE_REPO
+        sh ./Tools/sh_build_binary.sh $BIN_REPO $SOURCE_SPECS $NEW_VERSION $Tag_Author $BIN_SOURCE_REPO $is_open_skip_check
     else
         echo_success "------------------组件没有开启二进制----------------"
-        podsReleasePush $BIN_REPO $PODSPEC_NAME $PUSH_SOURCE_REPO $BIN_SOURCE_REPO
+        if [ $is_open_skip_check == 1 ]; then
+            cd ./Tools
+            results=$(ruby sh_releaseVersionCheckResult.rb $NEW_VERSION $PODS_NAME $BIN_REPO "1")
+            cd ..
+            result=(${results//:/ })
+            isValite="${result[0]}"
+            valiteReason="${result[1]}"
+            if [[ $isValite == 1 ]]; then
+                release_path="${result[2]}"
+                skipCheckRelease $release_path $NEW_VERSION $PODSPEC_NAME
+            else
+                echo_warning "${NEW_VERSION}版本组件二进制发布失败, ${valiteReason}请检查!! -_- !!"
+            fi
+        else
+            podsReleasePush $BIN_REPO $PODSPEC_NAME $PUSH_SOURCE_REPO $BIN_SOURCE_REPO
+        fi
         tool_update_shihuo_repo
     fi
 fi

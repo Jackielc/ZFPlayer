@@ -13,13 +13,23 @@ def configPodBinSwitch(a)
     temp_file = Tempfile.new("#{projectName}.podSpec")
     begin   
         podfile = File.open($PODSPEC_PATH, "r")
-        is_contain=false
+        is_contain_bin=false
+        is_contain_skip=false
         podfile.each do |line|
             if line.include?("SH_pod_bin")
-                is_contain = true
+                is_contain_bin = true
                 temp_file.puts line
-            elsif line.to_s.start_with?("Pod::Spec.new") && !is_contain
-                item = "#组件是否参与二进制开关 \n#SH_pod_bin = false \n#{line}"
+            elsif line.include?("POD_SKIP_CHECK")
+                is_contain_skip = true
+                temp_file.puts line
+            elsif line.to_s.start_with?("Pod::Spec.new")
+                item = ''
+                if !is_contain_bin
+                    item = item + "#组件是否参与二进制开关 \n#SH_pod_bin = false \n"    
+                elsif !is_contain_skip
+                    item = item + "#组件是否跳过校验 \n#POD_SKIP_CHECK = false \n"    
+                end    
+                item = item + "#{line}"
                 temp_file.puts item
             elsif line.to_s.include?(".ios.deployment_target") || line.to_s.include?(".deployment_target")
                 item = "  s.ios.deployment_target = '#{$POD_DEVELOPMENT_TARGET}'"

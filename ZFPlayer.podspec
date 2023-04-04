@@ -8,6 +8,8 @@
 
 #组件是否参与二进制开关 
 #SH_pod_bin = false 
+#组件是否跳过校验 
+#POD_SKIP_CHECK = false 
 Pod::Spec.new do |s|
   s.name             = 'ZFPlayer'
   s.version          = '12.0.6'

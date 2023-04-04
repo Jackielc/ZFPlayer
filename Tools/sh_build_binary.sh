@@ -12,6 +12,8 @@ POD_VERSION=$3
 TAG_AUTHER=$4
 #二进制源
 BIN_SOURCE_REPO=$5
+#是否跳过检测
+IS_SKIP_CHECK=$6
 #是否开启制作xcframework
 IS_OPEN_XCFRAMEWORK=NO
 #工程名
@@ -208,8 +210,26 @@ fi
 cd ..
 BIN_PUSH_SOURCE_REPO=${SOURCE_SPECS}
 BIN_PUSH_SOURCE_REPO=${BIN_PUSH_SOURCE_REPO/"${BIN_SOURCE_REPO},"/}
-podsReleasePush $CURRENT_REPO $PODSPEC_NAME $BIN_PUSH_SOURCE_REPO $BIN_SOURCE_REPO
-RELEASE_RESULT=$?
+if [ $IS_SKIP_CHECK == 1 ]; then
+    cd ./Tools
+    results=$(ruby sh_releaseVersionCheckResult.rb $POD_VERSION $PROJECT_NAME $CURRENT_REPO "1")
+    cd ..
+    result=(${results//:/ })
+    isValite="${result[0]}"
+    valiteReason="${result[1]}"
+    if [[ $isValite == "1" ]]; then
+        RELEASE_RESULT=1
+        release_path="${result[2]}"
+        skipCheckRelease $release_path $POD_VERSION $PODSPEC_NAME
+    else
+        RELEASE_RESULT=0
+        echo_warning "${POD_VERSION}版本组件二进制发布失败, ${valiteReason}请检查!! -_- !!"
+    fi
+else
+    podsReleasePush $CURRENT_REPO $PODSPEC_NAME $BIN_PUSH_SOURCE_REPO $BIN_SOURCE_REPO
+    RELEASE_RESULT=$?
+fi
+
 # 二进制组件发布结果
 HTTP_GX='(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]'
 if [ $RELEASE_RESULT == 1 ]; then
