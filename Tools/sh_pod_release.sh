@@ -19,46 +19,68 @@ function tool_get_time_interval() {
 #组件发布通知
 # param 1 : success
 # param 2 : 标题描述
-# param 3 : 发布版本
-# param 4 : 版本发布者
+# param 3 : 版本发布者
+# param 4 : 发布版本
 # param 5 : 错误描述
 function webhookMessage() {
     message=""
-    name="${CI_PROJECT_NAME}"
-    tag="${CI_COMMIT_TAG}"
-    url="$CI_PROJECT_URL"
+    name=""
+    tag=""
+    url=""
     pipeline="$CI_PIPELINE_ID"
     #发布是否成功
     PUSH_SUCCESS=$1
     #标题
     titleDesc=$2
-    #发布版本
-    pushTag="$3"
-    #Tag_Author
-    userName="$4"
-    errorDesc=$5
+    #发布作者
+    userName="$3"
+    pushTag=""
+    ERROR_DESC=""
+    IS_JENKINS=1
+    if [ $PUBLISHPLATFORM == $JENKISN ]; then
+        name=${JOB_NAME}
+        url="${BUILD_URL}/console"
+        IS_JENKINS=1
+    else
+        name="${CI_PROJECT_NAME}"
+        tag="${CI_COMMIT_TAG}"
+        url="$CI_PROJECT_URL"
+        IS_JENKINS=0
+    fi
     hookUrl="https://open.feishu.cn/open-apis/bot/v2/hook/71a8a82a-ee40-442e-aff6-8d626d2feb08"
     if $PUSH_SUCCESS; then
+        pushTag="$4"
+        ERROR_DESC=$5
         cost_time=$(tool_get_time_interval ${CI_BEGAIN_TIME} $(date +%s))
         #成功的通知
         content_publish_tag="{\"tag\":\"text\",\"text\":\"发布tag：$pushTag\n\"}"
         content_publish_author="{\"tag\":\"text\",\"text\":\"发布者：$userName\n\"}"
         content_publish_content="{\"tag\":\"text\",\"text\":\"发布内容：${Publish_Content}\n\"}"
         content_publish_cost_time="{\"tag\":\"text\",\"text\":\"耗时：${cost_time}\n\"}"
+        content_publish_platform="{\"tag\":\"text\",\"text\":\"发布平台：${PUBLISHPLATFORM}\n\"}"
         if [[ -z ${Publish_Content} ]]; then
             content_publish_content="{\"tag\":\"text\",\"text\":\"最后提交：${Last_Commmit_Msg}\n\"}"
         fi
-        content_repo_link="{\"tag\":\"a\",\"text\":\"仓库地址\",\"href\":\"$url\"}"
-        message="{\"msg_type\":\"post\",\"content\":{\"post\":{\"zh_cn\":{\"title\":\"$name--${titleDesc}--发布成功\",\"content\":[[${content_publish_tag},${content_publish_author},${content_publish_content},${content_publish_cost_time},${content_repo_link}]]}}}}"
-        if [[ !(${#errorDesc} -lt 1) ]]; then
-            content_publish_tips="{\"tag\":\"text\",\"text\":\"提示：${errorDesc}\n\"}"
-            message="{\"msg_type\":\"post\",\"content\":{\"post\":{\"zh_cn\":{\"title\":\"$name--${titleDesc}--发布成功\",\"content\":[[${content_publish_tag},${content_publish_author},${content_publish_content},${content_publish_tips},${content_publish_cost_time},${content_repo_link}]]}}}}"
+        if [ $IS_JENKINS == 1 ]; then
+            content_repo_link="{\"tag\":\"a\",\"text\":\"发布日志\",\"href\":\"$url\"}"
+        else
+            content_repo_link="{\"tag\":\"a\",\"text\":\"仓库地址\",\"href\":\"$url\"}"
+        fi
+        message="{\"msg_type\":\"post\",\"content\":{\"post\":{\"zh_cn\":{\"title\":\"$name--${titleDesc}--发布成功\",\"content\":[[${content_publish_tag},${content_publish_author},${content_publish_content},${content_publish_cost_time},${content_publish_platform},${content_repo_link}]]}}}}"
+        if [[ !(${#ERROR_DESC} -lt 1) ]]; then
+            content_publish_tips="{\"tag\":\"text\",\"text\":\"提示：${ERROR_DESC}\n\"}"
+            message="{\"msg_type\":\"post\",\"content\":{\"post\":{\"zh_cn\":{\"title\":\"$name--${titleDesc}--发布成功\",\"content\":[[${content_publish_tag},${content_publish_author},${content_publish_content},${content_publish_tips},${content_publish_cost_time},${content_publish_platform},${content_repo_link}]]}}}}"
         fi
         hookUrl="https://open.feishu.cn/open-apis/bot/v2/hook/71a8a82a-ee40-442e-aff6-8d626d2feb08"
         res=$(curl -X POST -H "Content-Type: application/json" -d "$message" https://open.feishu.cn/open-apis/bot/v2/hook/71a8a82a-ee40-442e-aff6-8d626d2feb08)
     else
+        ERROR_DESC=$4
         #失败的通知
-        message2="{\"msg_type\":\"post\",\"content\":{\"post\":{\"zh_cn\":{\"title\":\"$name--${titleDesc}--发布失败\",\"content\":[[{\"tag\":\"text\",\"text\":\"触发tag：$tag\npipeline信息：$pipeline\nError：$errorDesc\n\"},{\"tag\":\"a\",\"text\":\"仓库地址\",\"href\":\"$url\"}]]}}}}"
+        if [ $IS_JENKINS == 1 ]; then
+            message2="{\"msg_type\":\"post\",\"content\":{\"post\":{\"zh_cn\":{\"title\":\"$name--${titleDesc}--发布失败\",\"content\":[[{\"tag\":\"text\",\"text\":\"发布者：$userName\n发布平台：$PUBLISHPLATFORM\nError：$ERROR_DESC\n\"},{\"tag\":\"a\",\"text\":\"发布日志\",\"href\":\"$url\"}]]}}}}"
+        else
+            message2="{\"msg_type\":\"post\",\"content\":{\"post\":{\"zh_cn\":{\"title\":\"$name--${titleDesc}--发布失败\",\"content\":[[{\"tag\":\"text\",\"text\":\"触发tag：$tag\npipeline信息：$pipeline\n发布平台：$PUBLISHPLATFORM\nError：$ERROR_DESC\n\"},{\"tag\":\"a\",\"text\":\"仓库地址\",\"href\":\"$url\"}]]}}}}"
+        fi
         hookUrl="https://open.feishu.cn/open-apis/bot/v2/hook/5e235e56-9abe-4c8c-9dba-867d40238652"
         res=$(curl -X POST -H "Content-Type: application/json" -d "$message2" https://open.feishu.cn/open-apis/bot/v2/hook/5e235e56-9abe-4c8c-9dba-867d40238652)
     fi

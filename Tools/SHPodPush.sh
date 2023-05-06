@@ -16,6 +16,10 @@
 function log_line() {
     echo "========"
 }
+#分割线
+function log_line() {
+    echo "========================"
+}
 
 #重写文件内容
 function rewriteFileContentOfLine() {
@@ -52,23 +56,14 @@ function rewriteFileContentOfLine() {
     sed -i '' "s%${OID_TMP_STRING}%${NEW_TMP_STRING}%g" $FILE_NAME
 }
 source './Tools/sh_pod_release.sh'
-
-# 飞书结果通知
-webhook() {
-    webhookMessage $1 "源码" $NEW_VERSION $Tag_Author $2
-}
-
-#分割线
-function log_line() {
-    echo "========================"
-}
-
 source './Tools/tool_functions.sh'
 source './Tools/upload_event_to_sls_tool.sh'
 
 #校验外部传参，确定手动发布还是自动发布
-ARG_BRANCH_TAG=$1
-CI_BEGAIN_TIME=$2
+PUBLISHPLATFORM=$1
+ARG_BRANCH_TAG=$2
+CI_BEGAIN_TIME=$3
+PUBLISHENVIR=$4
 
 #REPO发布类型
 RELEASE="release"
@@ -76,11 +71,15 @@ GRAY="gray"
 TEST="test"
 OLD="old"
 
+#发布平台类型
+JENKISN="jenkins"
+RUNNER="runner"
+
 #解析后的参数，以此来判断是否采用交互式过程
 USER_CHOOESD_REPO=""
 USER_NAME=""
-#打tag的作者
-Tag_Author=""
+#发布的作者
+Publish_Author=""
 Publish_Content=""
 Last_Commmit_Msg=""
 USER_VERSION_POSITION="" #要变更的版本位
@@ -88,21 +87,19 @@ USER_VERSION_POSITION="" #要变更的版本位
 POD_BIN_SYMBOL="SH_pod_bin = true"
 POD_CT_SYMBOL="SH_pod_CT = true"
 POD_SKIP_CHECK="POD_SKIP_CHECK = true"
+#新发布的版本
+NEW_VERSION=""
 
-# CI_PIPELINE_ID=1
-# 是否走CI发布
-isPipeline=0
-if [ $CI_PIPELINE_ID ] >0; then
-    isPipeline=1
-fi
-AUTOMATIC_PROCESS=$isPipeline
-#echo "CI开始---${CI_PIPELINE_ID}---${isPipeline}---${AUTOMATIC_PROCESS}"
-prepareParams() {
-    # 初始化记事本，并记录初始时间
-    initRecordTxt
-    # 记录组件名
-    recordKeyValue "page" "${CI_PROJECT_NAME}"
+# 飞书结果通知
+# param1 是否发布成功
+# param2 发布成功版本号
+# param3 失败原因
+webhook() {
+    webhookMessage $1 "源码" $Publish_Author $2 $3
+}
 
+#gitlabel runner 发布准备
+runnerPrepareParams() {
     arr=($(echo $ARG_BRANCH_TAG | tr '_' ' '))
     # echo ${arr[@]}
     USER_CHOOESD_REPO=${arr[0]}
@@ -112,22 +109,21 @@ prepareParams() {
 
     #读取tag信息
     TagInfo=$(git show $ARG_BRANCH_TAG)
-    Tag_Author=$USER_NAME
+    Publish_Author=$USER_NAME
     #判断是否附注tag
     if [[ ${TagInfo:0:3} == "tag" ]]; then
         #正则匹配出作者位置
-        Tag_Author=$(echo $TagInfo | grep -Eo "Tagger: (.*?) <")
+        Publish_Author=$(echo $TagInfo | grep -Eo "Tagger: (.*?) <")
         #使用空格分割成数组
-        TagInfoArray=(${Tag_Author// / })
+        TagInfoArray=(${Publish_Author// / })
         #取出第2个位置的就是打tag的作者
-        Tag_Author=${TagInfoArray[1]}
-
+        Publish_Author=${TagInfoArray[1]}
         #提取发布内容
         Publish_Content=$(git cat-file tag $ARG_BRANCH_TAG | tail -n+6)
     else
         Last_Commmit_Msg=$(tool_get_last_suitable_commit_message)
     fi
-    echo "本次发布者：|$Tag_Author|"
+    echo "本次发布者：|$Publish_Author|"
 
     #删除触发tag
     git push origin :refs/tags/$ARG_BRANCH_TAG
@@ -162,18 +158,58 @@ prepareParams() {
     fi
     return 1
 }
+#jenkins 发布准备参数
+jenkinsPrepareParams() {
+    #升级版本号位置
+    USER_VERSION_POSITION=($(echo $ARG_BRANCH_TAG | tr '.' ' '))
+    #发布的作者 jenskins 环境变量
+    Publish_Author=${BUILD_USER}
+    #发布环境
+    USER_CHOOESD_REPO=${PUBLISHENVIR}
+    #版本号升级位置:可选
+    #case1:版本号各位如果大于当前版本3则校验不通过、直接退出
+    #case2:版本号位数少于3
+    if [ $USER_VERSION_POSITION -gt 3 -o $USER_VERSION_POSITION -lt 0 ]; then
+        USER_VERSION_POSITION=2
+        echo "tag中version字段不符合规范, 超出当前版本号位数"
+        return 0
+    fi
+    echo "发布环境 $USER_CHOOESD_REPO"
+    if test ${#USER_CHOOESD_REPO} -lt 1; then
+        echo "tag中目标repo不符合规范"
+        return 0
+    fi
+    if [ "$USER_CHOOESD_REPO" != $RELEASE ] && [ "$USER_CHOOESD_REPO" != $GRAY ] && [ "$USER_CHOOESD_REPO" != $TEST ] && [ "$USER_CHOOESD_REPO" != $OLD ]; then
+        echo "tag中目标repo不符合规范"
+        return 0
+    fi
+    #jenkins 发布内容获取
+    Publish_Content=${publishContent}
+    #最后一条commit 提交内容
+    Last_Commmit_Msg=$(tool_get_last_suitable_commit_message)
+    CURRENT_BRANCH=${branch}
+    arr=($(echo $CURRENT_BRANCH | tr '/' ' '))
+    USER_NAME=${arr[1]}
+    return 1
+}
 #回到主工程目录
 # echo $(pwd)
-
-echo "进入自动发布流程"
+isVerification=0
+echo "进入自动发布流程, 发布平台为：$PUBLISHPLATFORM"
 #校验参数
-prepareParams
-#校验结果
-isVerification=$?
+if [ $PUBLISHPLATFORM == $JENKISN ]; then
+    jenkinsPrepareParams
+    isVerification=$?
+    PUBLISHPLATFORM=$JENKISN
+else
+    runnerPrepareParams
+    isVerification=$?
+    PUBLISHPLATFORM=$RUNNER
+fi
 #校验失败终止，发送
 if [ $isVerification == 0 ]; then
     echo_warning "自动发布版本号校验失败"
-    webhook false "触发CI参数格式校验失败"
+    webhook false "" "触发CI参数格式校验失败"
     exit 1
 fi
 
@@ -301,7 +337,7 @@ git tag | xargs git tag -d
 if [ -z $LAST_VERISON ]; then
     if [ $USER_CHOOESD_REPO == "gray" ]; then
         echo_warning "修复tag获取失败！！！"
-        webhook false "修复tag获取失败, check !!!"
+        webhook false "" "修复tag获取失败, check !!!"
         exit 1
     fi
     LAST_VERISON='0.0.1'
@@ -321,7 +357,6 @@ VERSION_ARR=(${LAST_VERISON//./ })
 VERSION_ARR_COUNT=${#VERSION_ARR[*]}
 VERSION_TIPS_COUNT=${#VERSION_TIPS[*]}
 
-NEW_VERSION=""
 getAutoVersion() {
     if [ $USER_CHOOESD_REPO == $GRAY ]; then
         #灰度，修复问题版本
@@ -396,32 +431,20 @@ fi
 
 echo "----------------提交发布信息------------------"
 
-#[AUTO] 从参数中获取最后一条commit
-READ_COMMIT_INFO=$CI_COMMIT_MESSAGE
-# 如果没有输入注释 那么默认注释是podspec文件版本号
-if [[ ${#READ_COMMIT_INFO} == 0 ]]; then
-    READ_COMMIT_INFO=${NEW_VERSION}
-    echo_success ">>>> 未输入注释, 默认使用push的tag号做为注释内容 <<<<"
-else
-    echo_success ">>>> 输入的提交注释是: <<<<"
-    echo_success "${READ_COMMIT_INFO}"
-    log_line
-fi
-
 git add .
 git commit -a -m "自动发布，${NEW_VERSION}"
 
 if [[ -n $Publish_Content ]]; then
-    tagMessage="${Tag_Author}：${Publish_Content}"
+    tagMessage="${Publish_Author}：${Publish_Content}"
     git tag -a -m "${tagMessage}" "${NEW_VERSION}"
 else
-    tagMessage="${Tag_Author}：${Last_Commmit_Msg}"
+    tagMessage="${Publish_Author}：${Last_Commmit_Msg}"
     git tag -a -m "${tagMessage}" "${NEW_VERSION}"
 fi
 
 if [[ ! $? ]]; then
     echo "打tag失败"
-    webhook false "打tag失败, please check !"
+    webhook false "" "打tag失败, please check !"
     exit 1
 fi
 
@@ -449,7 +472,7 @@ else
     #删除所有tag
     git push origin :refs/tags/$NEW_VERSION
     git tag | xargs git tag -d
-    webhook false "git push was failed, please check !"
+    webhook false "" "git push was failed, please check !"
     exit 1
 fi
 
@@ -490,7 +513,7 @@ if [ $RELEASE_RESULT == 1 ]; then
     echo_success "组件发布成功 !! ^_^ !!"
 else
     echo_warning "${NEW_VERSION}版本组件发布失败, 请检查!! -_- !!"
-    webhook false "${NEW_VERSION} pod repo push failed, check !!!"
+    webhook false "" "${NEW_VERSION} pod repo push failed, check !!!"
     #修改podspec版本号
     rewriteFileContentOfLine $PODSPEC_NAME "s.version" $LAST_VERISON
     rewriteFileContentOfLine $PODSPEC_CT_NAME "s.version" $LAST_VERISON
@@ -526,7 +549,7 @@ fi
 log_line
 echo_success "----------------开始更新发布机器机repo------------------"
 tool_update_shihuo_repo
-webhook true $CT_RELEASE_TIPS
+webhook true $NEW_VERSION $CT_RELEASE_TIPS
 recordEndTime
 
 if [ "$USER_CHOOESD_REPO" != $RELEASE ] && [ "$USER_CHOOESD_REPO" != $GRAY ]; then
@@ -539,12 +562,13 @@ else
         #触发二进制配置
         echo_success "----------------开始更新组件二进制------------------"
         echo $(pwd)
+        binary_begin_time=$(date +%s)
         cd ./Tools
         ruby sh_binary_configure_framework.rb $PODS_NAME ':swift'
         cd ..
         echo $(pwd)
         #开始二进制发布
-        sh ./Tools/sh_build_binary.sh $BIN_REPO $SOURCE_SPECS $NEW_VERSION $Tag_Author $BIN_SOURCE_REPO $is_open_skip_check
+        sh ./Tools/sh_build_binary.sh $BIN_REPO $SOURCE_SPECS $NEW_VERSION $Publish_Author $BIN_SOURCE_REPO $binary_begin_time $PUBLISHPLATFORM $is_open_skip_check
     else
         echo_success "------------------组件没有开启二进制----------------"
         if [ $is_open_skip_check == 1 ]; then

@@ -12,8 +12,12 @@ POD_VERSION=$3
 TAG_AUTHER=$4
 #二进制源
 BIN_SOURCE_REPO=$5
+#二进制开始时间
+CI_BEGAIN_TIME=$6
+#发布平台
+PUBLISHPLATFORM=$7
 #是否跳过检测
-IS_SKIP_CHECK=$6
+IS_SKIP_CHECK=$8
 #是否开启制作xcframework
 IS_OPEN_XCFRAMEWORK=NO
 #工程名
@@ -236,16 +240,16 @@ if [ $RELEASE_RESULT == 1 ]; then
     if [[ $PRODUCT_URL_PATH =~ $HTTP_GX ]]; then
         echo_success "组件二进制发布成功 !! ^_^ !!"
         tool_update_shihuo_repo
-        webhookMessage true "二进制" $POD_VERSION $TAG_AUTHER
+        webhookMessage true "二进制" $TAG_AUTHER $POD_VERSION
     else
         echo_success "组件源码发布成功 !! ^_^ !!"
         tool_update_shihuo_repo
         echo_warning "${POD_VERSION}版本二进制发布失败, 请检查!! -_- !!"
-        webhookMessage false "二进制" $POD_VERSION $TAG_AUTHER "${POD_VERSION} pod repo push failed, Replace source repo push，check !!!"
+        webhookMessage false "二进制" $TAG_AUTHER $POD_VERSION "${POD_VERSION} pod repo push failed, Replace source repo push，check !!!"
     fi
 else
     echo_warning "${POD_VERSION}版本二进制发布失败, 请检查!! -_- !!"
-    webhookMessage false "二进制" $POD_VERSION $TAG_AUTHER "${POD_VERSION} pod repo push failed, check !!!"
+    webhookMessage false "二进制" $TAG_AUTHER $POD_VERSION "${POD_VERSION} pod repo push failed, check !!!"
     exit 1
 fi
 echo_success "----------------开始更新发布机器机repo------------------"

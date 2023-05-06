@@ -2,6 +2,9 @@
 #Created by shigaoqiang on 2021/05/17
 # 一些shell函数
 
+export JENKISN="jenkins"
+export RUNNER="runner"
+
 # 获取最后一条commit信息（非Merge 非自动发布开头）
 function tool_get_last_suitable_commit_message() {
     commitContents=$(git log --pretty=format:"%H" -20)
@@ -106,7 +109,7 @@ function getArrItemIdx() {
 
 function getTargetXcodeproject() {
     path=$1
-    project_name=`basename $path` # SHFoundation_OC
+    project_name=$(basename $path) # SHFoundation_OC
     project_example_xcodeproj=''
     # echo "项目名称<$project_name>"
     example_path="$path/Example"
@@ -117,16 +120,16 @@ function getTargetXcodeproject() {
         # echo 'Example存在'
         project_example_xcodeproj="$example_path/${project_name}.xcodeproj"
 
-        # if [ ! -d "$project_example_xcodeproj" ]; then 
+        # if [ ! -d "$project_example_xcodeproj" ]; then
         #     echo "${project_example_xcodeproj} 不存在额"
         # else
         #     echo "${project_example_xcodeproj} 存在额"
-        # fi 
+        # fi
     fi
 
-    if [ ! -d "$project_example_xcodeproj" ]; then 
+    if [ ! -d "$project_example_xcodeproj" ]; then
         echo ""
     else
         echo "${project_example_xcodeproj}"
-    fi 
+    fi
 }

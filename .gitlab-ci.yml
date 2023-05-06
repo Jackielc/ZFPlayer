@@ -10,6 +10,7 @@ before_script:
   - git fetch origin --prune # 同步远程的tag
   - git tag --sort=-committerdate
   - CI_BEGAIN_TIME=$(date +%s)
+  - PUBLISH_ENVIR="runner"
 
 stages:
   - prepare_params #组装参数
@@ -66,4 +67,4 @@ ececute_push_job:
       - $CI_COMMIT_TAG =~ /^release.*/
       - $CI_COMMIT_TAG =~ /^gray.*/
   script:
-    - sh ./Tools/SHPodPush.sh $CI_COMMIT_TAG $CI_BEGAIN_TIME
+    - sh ./Tools/SHPodPush.sh $PUBLISH_ENVIR $CI_COMMIT_TAG $CI_BEGAIN_TIME
