@@ -1,0 +1,6 @@
+echo "run post-action start";
+sourceRoot=$(dirname "$SRCROOT");
+actionPath="$sourceRoot/Tools/buildActions/xcode_post_action.sh";
+ [ ! -f $actionPath ] && actionPath="$SRCROOT/Tools/buildActions/xcode_pre_action.sh";
+source $actionPath;
+echo "run post-action end";

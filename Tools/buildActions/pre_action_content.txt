@@ -1,0 +1,7 @@
+echo "run pre-action start";
+sourceRoot=$(dirname "$SRCROOT");
+actionPath="$sourceRoot/Tools/buildActions/xcode_pre_action.sh";
+ [ ! -f $actionPath ] && actionPath="$SRCROOT/Tools/buildActions/xcode_pre_action.sh";
+echo $actionPath;
+source $actionPath; 
+echo "run pre-action end";
