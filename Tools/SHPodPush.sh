@@ -64,6 +64,7 @@ PUBLISHPLATFORM=$1
 ARG_BRANCH_TAG=$2
 CI_BEGAIN_TIME=$3
 PUBLISHENVIR=$4
+JENKINS_PUBLISH_AUTHOR=$5
 
 #REPO发布类型
 RELEASE="release"
@@ -163,7 +164,11 @@ jenkinsPrepareParams() {
     #升级版本号位置
     USER_VERSION_POSITION=($(echo $ARG_BRANCH_TAG | tr '.' ' '))
     #发布的作者 jenskins 环境变量
-    Publish_Author=${BUILD_USER}
+    current_author=${JENKINS_PUBLISH_AUTHOR}
+    if [ -z "$current_author" ]; then
+        current_author=${BUILD_USER}
+    fi
+    Publish_Author=$current_author
     #发布环境
     USER_CHOOESD_REPO=${PUBLISHENVIR}
     #版本号升级位置:可选
