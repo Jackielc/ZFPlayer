@@ -32,7 +32,7 @@ TODO: Add long description of the pod here.
   s.author           = { 'wangyongxin0408' => 'wangyongxin0408@shihuo.cn' }
   s.source           = { :git => 'git@code.shihuo.cn:shihuoios/thirdparty/zfplayer.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
-  s.ios.deployment_target = '11.0'
+  s.ios.deployment_target = '10.0'
   s.static_framework = true
   s.pod_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
   s.user_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
