@@ -54,8 +54,6 @@
 /// 锁定屏幕按钮
 @property (nonatomic, strong) UIButton *lockBtn;
 
-@property (nonatomic, assign) BOOL isShow;
-
 @end
 
 @implementation ZFLandScapeControlView
@@ -90,6 +88,10 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
+    if (self.ignoreFrame) {
+        return;
+    }
+    
     CGFloat min_x = 0;
     CGFloat min_y = 0;
     CGFloat min_w = 0;
@@ -470,9 +472,9 @@
     if (!_slider) {
         _slider = [[ZFSliderView alloc] init];
         _slider.delegate = self;
-        _slider.maximumTrackTintColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:0.8];
-        _slider.bufferTrackTintColor  = [UIColor colorWithRed:1 green:1 blue:1 alpha:0.5];
-        _slider.minimumTrackTintColor = [UIColor whiteColor];
+        _slider.maximumTrackTintColor = [UIColorFromHex(0xffffff) colorWithAlphaComponent:0.2];
+        _slider.bufferTrackTintColor = [UIColorFromHex(0xffffff) colorWithAlphaComponent:0.3];
+        _slider.minimumTrackTintColor = UIColorFromHex(0xff4438);
         [_slider setThumbImage:ZFPlayer_Image(@"ZFPlayer_slider") forState:UIControlStateNormal];
         _slider.sliderHeight = 2;
     }
