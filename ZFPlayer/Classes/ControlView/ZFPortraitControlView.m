@@ -142,11 +142,11 @@
     if (!self.isShow) {
         self.topToolView.zf_y = -self.topToolView.zf_height;
         self.bottomToolView.zf_y = self.zf_height;
-        self.playOrPauseBtn.alpha = 0;
+//        self.playOrPauseBtn.alpha = 0;
     } else {
         self.topToolView.zf_y = 0;
         self.bottomToolView.zf_y = self.zf_height - self.bottomToolView.zf_height;
-        self.playOrPauseBtn.alpha = 1;
+//        self.playOrPauseBtn.alpha = 1;
     }
 }
 
@@ -158,6 +158,7 @@
 #pragma mark - action
 
 - (void)playPauseButtonClickAction:(UIButton *)sender {
+    self.playOrPauseBtn.alpha = 0;
     [self playOrPause];
 }
 
@@ -229,7 +230,7 @@
     self.currentTimeLabel.text       = @"00:00";
     self.totalTimeLabel.text         = @"00:00";
     self.backgroundColor             = [UIColor clearColor];
-    self.playOrPauseBtn.selected     = YES;
+    self.playOrPauseBtn.selected     = NO;
     self.titleLabel.text             = @"";
 }
 
@@ -337,8 +338,8 @@
 - (UIButton *)playOrPauseBtn {
     if (!_playOrPauseBtn) {
         _playOrPauseBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-        [_playOrPauseBtn setImage:ZFPlayer_Image(@"new_allPlay_44x44_") forState:UIControlStateNormal];
-        [_playOrPauseBtn setImage:ZFPlayer_Image(@"new_allPause_44x44_") forState:UIControlStateSelected];
+        [_playOrPauseBtn setBackgroundImage:[UIImage imageNamed:@"goods_detail_play"] forState:UIControlStateNormal];
+        [_playOrPauseBtn setBackgroundImage:[UIImage imageNamed:@"goods_detail_pause"] forState:UIControlStateSelected];
     }
     return _playOrPauseBtn;
 }

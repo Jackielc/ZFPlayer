@@ -287,7 +287,7 @@
     self.currentTimeLabel.text       = @"00:00";
     self.totalTimeLabel.text         = @"00:00";
     self.backgroundColor             = [UIColor clearColor];
-    self.playOrPauseBtn.selected     = YES;
+    self.playOrPauseBtn.selected     = NO;
     self.titleLabel.text             = @"";
     self.topToolView.alpha           = 1;
     self.bottomToolView.alpha        = 1;
@@ -452,8 +452,8 @@
 - (UIButton *)playOrPauseBtn {
     if (!_playOrPauseBtn) {
         _playOrPauseBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-        [_playOrPauseBtn setImage:ZFPlayer_Image(@"ZFPlayer_play") forState:UIControlStateNormal];
-        [_playOrPauseBtn setImage:ZFPlayer_Image(@"ZFPlayer_pause") forState:UIControlStateSelected];
+        [_playOrPauseBtn setBackgroundImage:[UIImage imageNamed:@"goods_detail_play"] forState:UIControlStateNormal];
+        [_playOrPauseBtn setBackgroundImage:[UIImage imageNamed:@"goods_detail_pause"] forState:UIControlStateSelected];
     }
     return _playOrPauseBtn;
 }
