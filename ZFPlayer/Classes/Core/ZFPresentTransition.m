@@ -108,7 +108,7 @@
         [self.contentView layoutIfNeeded];
         toVC.view.backgroundColor = [tempColor colorWithAlphaComponent:1.f];
         if (split) {
-            containerView.backgroundColor = [tempColor colorWithAlphaComponent:0.1f];
+            containerView.backgroundColor = [tempColor colorWithAlphaComponent:0.2f];
         }
     } completion:^(BOOL finished) {
         self.transiting = NO;
