@@ -31,6 +31,7 @@
 @property (nonatomic, strong) UIView *contentView;
 @property (nonatomic, assign) ZFPresentTransitionType type;
 @property (nonatomic, strong) UIView *containerView;
+@property (nonatomic, strong) UIView *fakeContainerView;
 @property (nonatomic, assign, getter=isTransiting) BOOL transiting;
 
 @end
@@ -81,10 +82,17 @@
     UIView *containerView = [transitionContext containerView];
     BOOL split = UIApplication.useSplitMode;
     if (split) {
-        containerView.frame = [self splitContentRect];
+        UIView *fakeContainerView = [[UIView alloc]initWithFrame:[self splitContentRect]];
+        fakeContainerView.tag = 10001;
+        [containerView addSubview:fakeContainerView];
+        [fakeContainerView addSubview:toVC.view];
+        [fakeContainerView addSubview:self.contentView];
+        self.fakeContainerView = fakeContainerView;
+    } else {
+        [containerView addSubview:toVC.view];
+        [containerView addSubview:self.contentView];
     }
-    [containerView addSubview:toVC.view];
-    [containerView addSubview:self.contentView];
+
     CGRect originRect = [self.containerView convertRect:self.contentView.frame toView:toVC.view];
     self.contentView.frame = originRect;
 
@@ -99,6 +107,9 @@
         self.contentView.frame = toRect;
         [self.contentView layoutIfNeeded];
         toVC.view.backgroundColor = [tempColor colorWithAlphaComponent:1.f];
+        if (split) {
+            containerView.backgroundColor = [tempColor colorWithAlphaComponent:0.1f];
+        }
     } completion:^(BOOL finished) {
         self.transiting = NO;
         [toVC.view addSubview:self.contentView];
@@ -156,6 +167,10 @@
         self.contentView.frame = toRect;
         [self.contentView layoutIfNeeded];
     } completion:^(BOOL finished) {
+        if (split) {
+            containerView.backgroundColor = [UIColor clearColor];
+        }
+        [self.fakeContainerView removeFromSuperview];
         [self.containerView addSubview:self.contentView];
         self.contentView.frame = self.containerView.bounds;
         [transitionContext completeTransition:YES];
