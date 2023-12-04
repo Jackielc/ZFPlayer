@@ -26,6 +26,7 @@
 #import "ZFPersentInteractiveTransition.h"
 #import "ZFPresentTransition.h"
 
+@import SHFoundation;
 @interface ZFPortraitViewController ()<UIViewControllerTransitioningDelegate,ZFPortraitOrientationDelegate>
 
 @property (nonatomic, strong) ZFPresentTransition *transition;
@@ -204,27 +205,34 @@
 }
 
 - (CGRect)contentFullScreenRect {
+    BOOL split = UIApplication.useSplitMode;
+
+    CGFloat screenWidth = split ? UIScreen.ajustedBounds.size.width/2 : ZFPlayerScreenWidth;
+    CGFloat screenHeight = split ? UIScreen.ajustedBounds.size.height : ZFPlayerScreenHeight;
+    
     CGFloat videoWidth = self.presentationSize.width;
     CGFloat videoHeight = self.presentationSize.height;
     if (videoHeight == 0) {
         return CGRectZero;
     }
     CGSize fullScreenScaleSize = CGSizeZero;
-    CGFloat screenScale = ZFPlayerScreenWidth/ZFPlayerScreenHeight;
+    CGFloat screenScale = screenWidth/screenHeight;
     CGFloat videoScale = videoWidth/videoHeight;
     if (screenScale > videoScale) {
-        CGFloat height = ZFPlayerScreenHeight;
+        CGFloat height = screenHeight;
         CGFloat width = height * videoScale;
         fullScreenScaleSize = CGSizeMake(width, height);
     } else {
-        CGFloat width = ZFPlayerScreenWidth;
+        CGFloat width = screenWidth;
         CGFloat height = (CGFloat)(width / videoScale);
         fullScreenScaleSize = CGSizeMake(width, height);
     }
     
     videoWidth = fullScreenScaleSize.width;
     videoHeight = fullScreenScaleSize.height;
-    CGRect rect = CGRectMake((ZFPlayerScreenWidth - videoWidth) / 2.0, (ZFPlayerScreenHeight - videoHeight) / 2.0, videoWidth, videoHeight);
+    
+    CGFloat startX = split ? 0 : (screenWidth - videoWidth) / 2.0;
+    CGRect rect = CGRectMake(startX, (screenHeight - videoHeight) / 2.0, videoWidth, videoHeight);
     return rect;
 }
 

@@ -25,6 +25,7 @@
 #import "ZFPresentTransition.h"
 #import "ZFPlayerConst.h"
 
+@import SHFoundation;
 @interface ZFPresentTransition ()
 
 @property (nonatomic, strong) UIView *contentView;
@@ -78,6 +79,10 @@
         }
     }
     UIView *containerView = [transitionContext containerView];
+    BOOL split = UIApplication.useSplitMode;
+    if (split) {
+        containerView.frame = [self splitContentRect];
+    }
     [containerView addSubview:toVC.view];
     [containerView addSubview:self.contentView];
     CGRect originRect = [self.containerView convertRect:self.contentView.frame toView:toVC.view];
@@ -99,10 +104,12 @@
         [toVC.view addSubview:self.contentView];
         [transitionContext completeTransition:YES];
         [self.delagate zf_orientationDidChanged:YES];
-        if (!CGRectEqualToRect(toRect, self.contentFullScreenRect)) {
-            self.contentView.frame = self.contentFullScreenRect;
-            [self.contentView layoutIfNeeded];
+        if (!split) {
+            if (!CGRectEqualToRect(toRect, self.contentFullScreenRect)) {
+                self.contentView.frame = self.contentFullScreenRect;
+            }
         }
+        [self.contentView layoutIfNeeded];
     }];
 }
 
@@ -122,14 +129,25 @@
         }
     }
     
+    BOOL split = UIApplication.useSplitMode;
+    if (split) {
+        containerView.frame = [self splitContentRect];
+    }
+    
     UIViewController *fromVC = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     fromVC.view.frame = containerView.bounds;
     [containerView addSubview:fromVC.view];
     [containerView addSubview:self.contentView];
     
-    CGRect originRect = [fromVC.view convertRect:self.contentView.frame toView:toVC.view];
+    CGRect originRect = [fromVC.view convertRect:self.contentView.frame toView:toVC.view]; // (0 0; 468 834)
+    if (split) {
+        originRect.origin.x = 0;
+    }
     self.contentView.frame = originRect;
     CGRect toRect = [self.containerView convertRect:self.containerView.bounds toView:toVC.view];
+    if (split) {
+        toRect.origin.x = 0;
+    }
     [fromVC.view convertRect:self.contentView.bounds toView:self.containerView.window];
     [self.delagate zf_orientationWillChange:NO];
     self.transiting = YES;
@@ -153,4 +171,12 @@
     }
 }
 
+- (CGRect)splitContentRect {
+    BOOL split = UIApplication.useSplitMode;
+
+    CGFloat screenWidth = split ? UIScreen.ajustedBounds.size.width/2 : ZFPlayerScreenWidth;
+    CGFloat screenHeight = split ? UIScreen.ajustedBounds.size.height : ZFPlayerScreenHeight;
+    CGFloat startX = split ? UIScreen.ajustedBounds.size.width/2 : 0;
+    return CGRectMake(startX, 0, screenWidth, screenHeight);
+}
 @end
