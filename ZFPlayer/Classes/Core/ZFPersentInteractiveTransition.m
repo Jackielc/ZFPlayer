@@ -69,6 +69,20 @@
     return YES;
 }
 
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    if (gestureRecognizer == self.panGesture) {
+        CGPoint translation = [(UIPanGestureRecognizer *)gestureRecognizer translationInView:self.contentView];
+        CGFloat x = fabs(translation.x);
+        CGFloat y = fabs(translation.y);
+        if (x < y && self.disablePanMovingDirection & ZFPlayerDisablePanMovingDirectionVertical) { /// up and down moving direction.
+            return NO;
+        } else if (x > y && self.disablePanMovingDirection & ZFPlayerDisablePanMovingDirectionHorizontal) { /// left and right moving direction.
+            return NO;
+        }
+    }
+    return YES;
+}
+
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
     ZFDisablePortraitGestureTypes type = ZFDisablePortraitGestureTypesNone;
     if (gestureRecognizer == self.tapGesture) type = ZFDisablePortraitGestureTypesTap;

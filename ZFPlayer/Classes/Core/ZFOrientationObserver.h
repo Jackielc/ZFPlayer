@@ -24,6 +24,7 @@
 
 #import <UIKit/UIKit.h>
 #import "ZFPlayerView.h"
+#import "ZFPlayerGestureControl.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -123,6 +124,8 @@ typedef NS_OPTIONS(NSUInteger, ZFDisablePortraitGestureTypes) {
 
 /// default is ZFDisablePortraitGestureTypesAll.
 @property (nonatomic, assign) ZFDisablePortraitGestureTypes disablePortraitGestureTypes;
+
+@property (nonatomic, assign) ZFPlayerDisablePanMovingDirection disablePanMovingDirection;
 
 /// The current orientation of the player.
 /// Default is UIInterfaceOrientationPortrait.
