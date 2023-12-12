@@ -115,6 +115,10 @@
     return self.interactiveTransition.interation ? self.interactiveTransition : nil;
 }
 
+- (void)setDisablePanMovingDirection:(ZFPlayerDisablePanMovingDirection)disablePanMovingDirection {
+    _disablePanMovingDirection = disablePanMovingDirection;
+    self.interactiveTransition.disablePanMovingDirection = disablePanMovingDirection;
+}
 
 - (BOOL)shouldAutorotate {
     return NO;

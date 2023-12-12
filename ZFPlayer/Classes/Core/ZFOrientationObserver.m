@@ -317,6 +317,11 @@
     self.portraitViewController.disablePortraitGestureTypes = disablePortraitGestureTypes;
 }
 
+- (void)setDisablePanMovingDirection:(ZFPlayerDisablePanMovingDirection)disablePanMovingDirection {
+    _disablePanMovingDirection = disablePanMovingDirection;
+    self.portraitViewController.disablePanMovingDirection = disablePanMovingDirection;
+}
+
 - (void)setPresentationSize:(CGSize)presentationSize {
     _presentationSize = presentationSize;
     if (self.fullScreenMode == ZFFullScreenModePortrait && self.portraitFullScreenMode == ZFPortraitFullScreenModeScaleAspectFit) {
