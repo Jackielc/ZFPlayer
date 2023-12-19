@@ -12,7 +12,7 @@
 #POD_SKIP_CHECK = false 
 Pod::Spec.new do |s|
   s.name             = 'ZFPlayer'
-  s.version          = '12.0.8'
+  s.version          = '12.0.9'
   s.summary          = 'A short description of ZFPlayer.'
  s.swift_version = '5.0'
 
