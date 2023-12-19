@@ -41,6 +41,7 @@ TODO: Add long description of the pod here.
       core.source_files = 'ZFPlayer/Classes/Core/**/*'
       core.public_header_files = 'ZFPlayer/Classes/Core/**/*.h'
       core.frameworks = 'UIKit', 'MediaPlayer', 'AVFoundation'
+      core.dependency 'SHFoundation'
   end
 
   s.subspec 'ControlView' do |controlView|
