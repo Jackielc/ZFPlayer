@@ -532,13 +532,37 @@ fi
 
 CT_RELEASE_TIPS=""
 if [ $is_open_CT == 1 ]; then
-    podsReleasePush $Repo $PODSPEC_CT_NAME $PUSH_SOURCE_REPO $BIN_SOURCE_REPO
-    CT_RELEASE_RESULT=$?
+    if [ $is_open_skip_check == 1 ]; then
+        is_release="1"
+        if [ "$USER_CHOOESD_REPO" != $RELEASE ]; then
+            is_release="0"
+        fi
+        PODS_CT_NAME="${PODS_NAME}_CT"
+        cd ./Tools
+        results=$(ruby sh_releaseVersionCheckResult.rb $NEW_VERSION $PODS_CT_NAME $Repo $is_release)
+        cd ..
+        result=(${results//:/ })
+        isValite="${result[0]}"
+        valiteReason="${result[1]}"
+        if [[ $isValite == "1" ]]; then
+            CT_RELEASE_RESULT=1
+            release_path="${result[2]}"
+            echo "开始执行跳过校验发布${release_path}, ${CT_RELEASE_RESULT}"
+            skipCheckRelease $release_path $NEW_VERSION $PODSPEC_CT_NAME
+        else
+            CT_RELEASE_RESULT=0
+            echo_warning "${NEW_VERSION}版本组件发布失败, ${valiteReason}请检查!! -_- !!"
+        fi
+    else
+        podsReleasePush $Repo $PODSPEC_CT_NAME $PUSH_SOURCE_REPO $BIN_SOURCE_REPO
+        CT_RELEASE_RESULT=$?
+    fi
+
     if [ $CT_RELEASE_RESULT == 1 ]; then
         CT_RELEASE_TIPS="组件CT发布成功"
         echo_success $CT_RELEASE_TIPS
         #CT发布同步到二进制repo
-        podsReleasePush $BIN_REPO $PODSPEC_CT_NAME $PUSH_SOURCE_REPO $BIN_SOURCE_REPO
+        #podsReleasePush $BIN_REPO $PODSPEC_CT_NAME $PUSH_SOURCE_REPO $BIN_SOURCE_REPO
     else
         CT_RELEASE_TIPS="${NEW_VERSION}版本组件CT发布失败"
         echo_warning $CT_RELEASE_TIPS
