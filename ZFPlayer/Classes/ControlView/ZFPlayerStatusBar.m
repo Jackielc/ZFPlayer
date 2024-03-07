@@ -107,7 +107,7 @@
     [self.batteryLabel sizeToFit];
     
     self.dateLabel.zf_size = CGSizeMake(self.dateLabel.zf_width, 16);
-    self.batteryView.frame = CGRectMake(self.bounds.size.width - 35 - (ZFIPhoneX ? 44 : 0), 0, 22, 10);
+    self.batteryView.frame = CGRectMake(self.bounds.size.width - 35 - (iPhoneX ? 44 : 0), 0, 22, 10);
     self.batteryLabel.frame = CGRectMake(self.batteryView.zf_x - 42, 0, self.batteryLabel.zf_width, 16);
     self.networkLabel.frame = CGRectMake(self.batteryLabel.zf_x - 40, 0, self.networkLabel.zf_width + 13, 14);
     
