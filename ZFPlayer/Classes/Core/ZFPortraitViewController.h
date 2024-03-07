@@ -24,7 +24,6 @@
 
 #import <UIKit/UIKit.h>
 #import "ZFOrientationObserver.h"
-#import "ZFPlayerGestureControl.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -49,7 +48,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// default is ZFDisablePortraitGestureTypesNone.
 @property (nonatomic, assign) ZFDisablePortraitGestureTypes disablePortraitGestureTypes;
-@property (nonatomic, assign) ZFPlayerDisablePanMovingDirection disablePanMovingDirection;
 
 @property (nonatomic, assign) CGSize presentationSize;
 

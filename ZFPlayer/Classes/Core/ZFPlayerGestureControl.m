@@ -30,6 +30,7 @@
 @property (nonatomic, strong) UITapGestureRecognizer *doubleTap;
 @property (nonatomic, strong) UIPanGestureRecognizer *panGR;
 @property (nonatomic, strong) UIPinchGestureRecognizer *pinchGR;
+@property (nonatomic, strong) UILongPressGestureRecognizer *longPressGR;
 @property (nonatomic) ZFPanDirection panDirection;
 @property (nonatomic) ZFPanLocation panLocation;
 @property (nonatomic) ZFPanMovingDirection panMovingDirection;
@@ -48,6 +49,7 @@
     [self.targetView addGestureRecognizer:self.doubleTap];
     [self.targetView addGestureRecognizer:self.panGR];
     [self.targetView addGestureRecognizer:self.pinchGR];
+    [self.targetView addGestureRecognizer:self.longPressGR];
 }
 
 - (void)removeGestureToView:(UIView *)view {
@@ -55,6 +57,7 @@
     [view removeGestureRecognizer:self.doubleTap];
     [view removeGestureRecognizer:self.panGR];
     [view removeGestureRecognizer:self.pinchGR];
+    [view removeGestureRecognizer:self.longPressGR];
 }
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
@@ -110,6 +113,11 @@
             }
         }
             break;
+        case ZFPlayerDisableGestureTypesLongPress: {
+            if (self.disableTypes & ZFPlayerDisableGestureTypesLongPress) {
+                return NO;
+            }
+        }
     }
     
     if (self.triggerCondition) return self.triggerCondition(self, type, gestureRecognizer, touch);
@@ -145,7 +153,7 @@
         _singleTap.delegate = self;
         _singleTap.delaysTouchesBegan = YES;
         _singleTap.delaysTouchesEnded = YES;
-        _singleTap.numberOfTouchesRequired = 1;  
+        _singleTap.numberOfTouchesRequired = 1;
         _singleTap.numberOfTapsRequired = 1;
     }
     return _singleTap;
@@ -157,7 +165,7 @@
         _doubleTap.delegate = self;
         _doubleTap.delaysTouchesBegan = YES;
         _doubleTap.delaysTouchesEnded = YES;
-        _doubleTap.numberOfTouchesRequired = 1; 
+        _doubleTap.numberOfTouchesRequired = 1;
         _doubleTap.numberOfTapsRequired = 2;
     }
     return _doubleTap;
@@ -182,6 +190,15 @@
         _pinchGR.delaysTouchesBegan = YES;
     }
     return _pinchGR;
+}
+
+- (UILongPressGestureRecognizer *)longPressGR {
+    if (!_longPressGR) {
+        _longPressGR = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
+        _longPressGR.delegate = self;
+        _longPressGR.delaysTouchesBegan = YES;
+    }
+    return _longPressGR;
 }
 
 - (void)handleSingleTap:(UITapGestureRecognizer *)tap {
@@ -255,6 +272,26 @@
             break;
         default:
             break;
+    }
+}
+
+- (void)handleLongPress:(UILongPressGestureRecognizer *)longPress {
+    switch (longPress.state) {
+        case UIGestureRecognizerStateBegan: {
+            if (self.longPressed) self.longPressed(self, ZFLongPressGestureRecognizerStateBegan);
+        }
+            break;
+        case UIGestureRecognizerStateChanged: {
+            if (self.longPressed) self.longPressed(self, ZFLongPressGestureRecognizerStateChanged);
+        }
+            break;
+        case UIGestureRecognizerStateEnded:
+        case UIGestureRecognizerStateCancelled:
+        case UIGestureRecognizerStateFailed: {
+            if (self.longPressed) self.longPressed(self, ZFLongPressGestureRecognizerStateEnded);
+        }
+            break;
+        default: break;
     }
 }
 

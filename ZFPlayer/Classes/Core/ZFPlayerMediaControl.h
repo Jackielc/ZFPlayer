@@ -167,6 +167,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)gesturePinched:(ZFPlayerGestureControl *)gestureControl
                  scale:(float)scale;
 
+/**
+ When the gesture longPress changed
+ */
+- (void)longPressed:(ZFPlayerGestureControl *)gestureControl state:(ZFLongPressGestureRecognizerState)state;
+
 #pragma mark - scrollview
 
 /**

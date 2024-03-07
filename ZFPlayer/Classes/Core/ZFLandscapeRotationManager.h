@@ -74,8 +74,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)handleDeviceOrientationChange;
 
 /// update the rotateView and containerView.
-- (void)updateRotateView:(ZFPlayerView *)rotateView
+- (void)updateRotateView:(UIView *)rotateView
            containerView:(UIView *)containerView;
+
+- (UIView *)fullScreenContainerView;
 
 - (BOOL)isSuppprtInterfaceOrientation:(UIInterfaceOrientation)orientation;
 

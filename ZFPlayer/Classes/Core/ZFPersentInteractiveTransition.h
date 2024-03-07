@@ -25,7 +25,6 @@
 
 #import <UIKit/UIKit.h>
 #import "ZFOrientationObserver.h"
-#import "ZFPlayerGestureControl.h"
 
 @interface ZFPersentInteractiveTransition : UIPercentDrivenInteractiveTransition
 
@@ -35,7 +34,6 @@
 
 /// default is ZFDisablePortraitGestureTypesNone.
 @property (nonatomic, assign) ZFDisablePortraitGestureTypes disablePortraitGestureTypes;
-@property (nonatomic, assign) ZFPlayerDisablePanMovingDirection disablePanMovingDirection;
 
 @property (nonatomic, assign) BOOL fullScreenAnimation;
 

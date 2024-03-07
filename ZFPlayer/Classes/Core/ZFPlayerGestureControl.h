@@ -61,7 +61,8 @@ typedef NS_OPTIONS(NSUInteger, ZFPlayerDisableGestureTypes) {
     ZFPlayerDisableGestureTypesDoubleTap    = 1 << 1,
     ZFPlayerDisableGestureTypesPan          = 1 << 2,
     ZFPlayerDisableGestureTypesPinch        = 1 << 3,
-    ZFPlayerDisableGestureTypesAll          = (ZFPlayerDisableGestureTypesSingleTap | ZFPlayerDisableGestureTypesDoubleTap | ZFPlayerDisableGestureTypesPan | ZFPlayerDisableGestureTypesPinch)
+    ZFPlayerDisableGestureTypesLongPress    = 1 << 4,
+    ZFPlayerDisableGestureTypesAll          = (ZFPlayerDisableGestureTypesSingleTap | ZFPlayerDisableGestureTypesDoubleTap | ZFPlayerDisableGestureTypesPan | ZFPlayerDisableGestureTypesPinch | ZFPlayerDisableGestureTypesLongPress)
 };
 
 /// This enumeration lists some of the pan gesture moving direction that the player not support.
@@ -70,6 +71,13 @@ typedef NS_OPTIONS(NSUInteger, ZFPlayerDisablePanMovingDirection) {
     ZFPlayerDisablePanMovingDirectionVertical     = 1 << 0,  /// Disable pan moving vertical direction.
     ZFPlayerDisablePanMovingDirectionHorizontal   = 1 << 1,  /// Disable pan moving horizontal direction.
     ZFPlayerDisablePanMovingDirectionAll          = (ZFPlayerDisablePanMovingDirectionVertical | ZFPlayerDisablePanMovingDirectionHorizontal)  /// Disable pan moving all direction.
+};
+
+/// Long press gesture state
+typedef NS_ENUM(NSUInteger, ZFLongPressGestureRecognizerState) {
+    ZFLongPressGestureRecognizerStateBegan,
+    ZFLongPressGestureRecognizerStateChanged,
+    ZFLongPressGestureRecognizerStateEnded
 };
 
 @interface ZFPlayerGestureControl : NSObject
@@ -95,6 +103,9 @@ typedef NS_OPTIONS(NSUInteger, ZFPlayerDisablePanMovingDirection) {
 /// Pinch gesture callback.
 @property (nonatomic, copy, nullable) void(^pinched)(ZFPlayerGestureControl *control, float scale);
 
+/// longpress tap gesture callback.
+@property (nonatomic, copy, nullable) void(^longPressed)(ZFPlayerGestureControl *control, ZFLongPressGestureRecognizerState state);
+
 /// The single tap gesture.
 @property (nonatomic, strong, readonly) UITapGestureRecognizer *singleTap;
 
@@ -104,8 +115,11 @@ typedef NS_OPTIONS(NSUInteger, ZFPlayerDisablePanMovingDirection) {
 /// The pan tap gesture.
 @property (nonatomic, strong, readonly) UIPanGestureRecognizer *panGR;
 
-/// The pinch tap gesture.
+/// The pinch gesture.
 @property (nonatomic, strong, readonly) UIPinchGestureRecognizer *pinchGR;
+
+/// The long press gesture.
+@property (nonatomic, strong, readonly) UILongPressGestureRecognizer *longPressGR;
 
 /// The pan gesture direction.
 @property (nonatomic, readonly) ZFPanDirection panDirection;

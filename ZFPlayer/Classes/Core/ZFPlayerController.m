@@ -67,8 +67,21 @@ static NSMutableDictionary <NSString* ,NSNumber *> *_zfPlayRecords;
                 [self.controlView videoPlayer:self reachabilityChanged:status];
             }
         }];
+        [self configureVolume];
     }
     return self;
+}
+
+/// Get system volume
+- (void)configureVolume {
+    MPVolumeView *volumeView = [[MPVolumeView alloc] init];
+    self.volumeViewSlider = nil;
+    for (UIView *view in [volumeView subviews]){
+        if ([view.class.description isEqualToString:@"MPVolumeSlider"]){
+            self.volumeViewSlider = (UISlider *)view;
+            break;
+        }
+    }
 }
 
 - (void)dealloc {
@@ -263,9 +276,7 @@ static NSMutableDictionary <NSString* ,NSNumber *> *_zfPlayRecords;
         _notification.didBecomeActive = ^(ZFPlayerNotification * _Nonnull registrar) {
             @zf_strongify(self)
             if (self.isViewControllerDisappear) return;
-            if (self.playContinueWhenAppBecomeActive && self.isPauseByEvent) {
-                self.pauseByEvent = NO;
-            }
+            if (self.isPauseByEvent) self.pauseByEvent = NO;
             self.orientationObserver.lockedScreen = NO;
         };
         _notification.oldDeviceUnavailable = ^(ZFPlayerNotification * _Nonnull registrar) {
@@ -629,20 +640,6 @@ static NSMutableDictionary <NSString* ,NSNumber *> *_zfPlayRecords;
     return volume;
 }
 
-- (UISlider *)volumeViewSlider {
-    if (!_volumeViewSlider) {
-        MPVolumeView *volumeView = [[MPVolumeView alloc] init];
-        _volumeViewSlider = nil;
-        for (UIView *view in [volumeView subviews]){
-            if ([view.class.description isEqualToString:@"MPVolumeSlider"]){
-                _volumeViewSlider = (UISlider *)view;
-                break;
-            }
-        }
-    }
-    return _volumeViewSlider;
-}
-
 - (BOOL)isMuted {
     return self.volume == 0;
 }
@@ -663,13 +660,6 @@ static NSMutableDictionary <NSString* ,NSNumber *> *_zfPlayRecords;
     NSNumber *number = objc_getAssociatedObject(self, _cmd);
     if (number) return number.boolValue;
     self.pauseWhenAppResignActive = YES;
-    return YES;
-}
-
-- (BOOL)playContinueWhenAppBecomeActive {
-    NSNumber *number = objc_getAssociatedObject(self, _cmd);
-    if (number) return number.boolValue;
-    self.playContinueWhenAppBecomeActive = YES;
     return YES;
 }
 
@@ -774,10 +764,6 @@ static NSMutableDictionary <NSString* ,NSNumber *> *_zfPlayRecords;
 
 - (void)setPauseWhenAppResignActive:(BOOL)pauseWhenAppResignActive {
     objc_setAssociatedObject(self, @selector(pauseWhenAppResignActive), @(pauseWhenAppResignActive), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (void)setPlayContinueWhenAppBecomeActive:(BOOL)playContinueWhenAppBecomeActive {
-    objc_setAssociatedObject(self, @selector(playContinueWhenAppBecomeActive), @(playContinueWhenAppBecomeActive), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (void)setPlayerPrepareToPlay:(void (^)(id<ZFPlayerMediaPlayback> _Nonnull, NSURL * _Nonnull))playerPrepareToPlay {
@@ -1068,6 +1054,13 @@ static NSMutableDictionary <NSString* ,NSNumber *> *_zfPlayRecords;
             @zf_strongify(self)
             if ([self.controlView respondsToSelector:@selector(gesturePinched:scale:)]) {
                 [self.controlView gesturePinched:control scale:scale];
+            }
+        };
+        
+        gestureControl.longPressed = ^(ZFPlayerGestureControl * _Nonnull control, ZFLongPressGestureRecognizerState state) {
+            @zf_strongify(self)
+            if ([self.controlView respondsToSelector:@selector(longPressed:state:)]) {
+                [self.controlView longPressed:control state:state];
             }
         };
         objc_setAssociatedObject(self, _cmd, gestureControl, OBJC_ASSOCIATION_RETAIN_NONATOMIC);

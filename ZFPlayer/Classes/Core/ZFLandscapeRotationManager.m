@@ -38,7 +38,7 @@
     return self;
 }
 
-- (void)updateRotateView:(ZFPlayerView *)rotateView
+- (void)updateRotateView:(UIView *)rotateView
            containerView:(UIView *)containerView {
     self.contentView = rotateView;
     self.containerView = containerView;
@@ -87,6 +87,10 @@
             break;
         default: break;
     }
+}
+
+- (ZFLandscapeWindow *)window {
+    return _window;
 }
 
 - (BOOL)isSuppprtInterfaceOrientation:(UIInterfaceOrientation)orientation {
@@ -157,6 +161,12 @@
 }
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientationsForWindow:(nullable UIWindow *)window {
+    @throw [NSException exceptionWithName:NSInternalInconsistencyException
+                                   reason:[NSString stringWithFormat:@"You must override %@ in a subclass.", NSStringFromSelector(_cmd)]
+                                 userInfo:nil];
+}
+
+- (UIView *)fullScreenContainerView {
     @throw [NSException exceptionWithName:NSInternalInconsistencyException
                                    reason:[NSString stringWithFormat:@"You must override %@ in a subclass.", NSStringFromSelector(_cmd)]
                                  userInfo:nil];

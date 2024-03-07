@@ -247,7 +247,7 @@
 
 - (UIView *)fullScreenContainerView {
     if (self.fullScreenMode == ZFFullScreenModeLandscape) {
-        return self.landscapeRotationManager.landscapeViewController.view;
+        return self.landscapeRotationManager.fullScreenContainerView;
     } else if (self.fullScreenMode == ZFFullScreenModePortrait) {
         return self.portraitViewController.view;
     }
@@ -315,11 +315,6 @@
 - (void)setDisablePortraitGestureTypes:(ZFDisablePortraitGestureTypes)disablePortraitGestureTypes {
     _disablePortraitGestureTypes = disablePortraitGestureTypes;
     self.portraitViewController.disablePortraitGestureTypes = disablePortraitGestureTypes;
-}
-
-- (void)setDisablePanMovingDirection:(ZFPlayerDisablePanMovingDirection)disablePanMovingDirection {
-    _disablePanMovingDirection = disablePanMovingDirection;
-    self.portraitViewController.disablePanMovingDirection = disablePanMovingDirection;
 }
 
 - (void)setPresentationSize:(CGSize)presentationSize {

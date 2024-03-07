@@ -61,6 +61,10 @@
     [UIViewController attemptRotationToDeviceOrientation];
 }
 
+- (UIView *)fullScreenContainerView {
+    return self.landscapeViewController.playerSuperview;
+}
+
 - (void)rotationBegin {
     if (self.window.isHidden) {
         self.window.hidden = NO;

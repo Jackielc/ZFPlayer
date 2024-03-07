@@ -184,10 +184,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// default is YES.
 @property (nonatomic) BOOL pauseWhenAppResignActive;
 
-/// If Yes, player will be called play method When Received `UIApplicationDidBecomeActiveNotification` notification.
-/// default is YES.
-@property (nonatomic) BOOL playContinueWhenAppBecomeActive;
-
 /// When the player is playing, it is paused by some event,not by user click to pause.
 /// For example, when the player is playing, application goes into the background or pushed to another viewController
 @property (nonatomic, getter=isPauseByEvent) BOOL pauseByEvent;
